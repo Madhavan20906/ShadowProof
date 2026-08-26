@@ -65,7 +65,7 @@ export const RealExecutionConsole: React.FC<RealExecutionConsoleProps> = ({
 
   return (
     <div className="bg-[#131823] border border-slate-800 rounded-lg p-5 mb-6">
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800/80">
         <div>
           <h3 className="text-sm font-semibold text-white flex items-center gap-2">
@@ -81,7 +81,7 @@ export const RealExecutionConsole: React.FC<RealExecutionConsoleProps> = ({
         </span>
       </div>
 
-      {/* Progress Bar */}
+      {}
       <div className="mb-4">
         <div className="flex justify-between text-xs text-slate-400 mb-1">
           <span>Progress: Step {currentStepIdx + 1} of {plan.steps.length}</span>
@@ -95,7 +95,7 @@ export const RealExecutionConsole: React.FC<RealExecutionConsoleProps> = ({
         </div>
       </div>
 
-      {/* Terminal View */}
+      {}
       <div className="bg-[#0B0E14] rounded-md border border-slate-800 p-4 font-mono text-xs text-slate-300 h-64 overflow-y-auto space-y-1.5">
         {terminalLogs.map((log, idx) => (
           <div key={idx} className="flex items-start gap-2">

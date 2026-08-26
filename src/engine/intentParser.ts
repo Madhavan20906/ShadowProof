@@ -3,7 +3,6 @@ import { SystemState, ParsedIntent, SystemNode } from '../types/shadowproof';
 export function parseUserIntent(intentText: string, systemState: SystemState): ParsedIntent {
   const text = intentText.toLowerCase();
 
-  // 1. Detect Action Type dynamically across offboarding, infrastructure teardown, key rotation, and migration
   let action: 'deprovision' | 'delete' | 'revoke' = 'deprovision';
   if (text.includes('delete') || text.includes('teardown') || text.includes('terminate') || text.includes('drop') || text.includes('destroy') || text.includes('remove cluster')) {
     action = 'delete';
@@ -11,10 +10,8 @@ export function parseUserIntent(intentText: string, systemState: SystemState): P
     action = 'revoke';
   }
 
-  // 2. Dynamically match target node from active system graph state
   let matchedNode: SystemNode | undefined = undefined;
 
-  // Search by exact node ID, full node name, or tokenized name matches
   for (const node of systemState.nodes) {
     const nodeNameLower = node.name.toLowerCase();
     const nameTokens = nodeNameLower.split(/[\s-_]+/);
@@ -29,20 +26,16 @@ export function parseUserIntent(intentText: string, systemState: SystemState): P
     }
   }
 
-  // Generic fallback if no specific token matched in string
   if (!matchedNode) {
     matchedNode = systemState.nodes.find(n => n.type === 'user' || n.type === 'resource') || systemState.nodes[0];
   }
 
-  // 3. Extract Natural Language Operational Constraints dynamically
   const constraints: string[] = [];
 
-  // Check for continuous execution constraints
   if (text.includes('payroll') || text.includes('don\'t disrupt') || text.includes('without outage') || text.includes('zero downtime') || text.includes('no downtime')) {
     constraints.push('Preserve continuous execution of automated background jobs and connection pools.');
   }
 
-  // Dynamically find active lead users in the graph to serve as transfer candidates
   const activeLeadUsers = systemState.nodes.filter(n => n.type === 'user' && n.status === 'active' && n.id !== matchedNode?.id);
   if (activeLeadUsers.length > 0) {
     const leadNames = activeLeadUsers.slice(0, 2).map(u => u.name).join(' / ');

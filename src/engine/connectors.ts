@@ -1,7 +1,3 @@
-/**
- * Enterprise Connector Surface Definitions
- * Defines integration interfaces for external identity providers, cloud control planes, and observability platforms.
- */
 
 export interface IntegrationConnector {
   id: string;

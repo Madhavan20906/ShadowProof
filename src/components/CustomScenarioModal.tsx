@@ -102,7 +102,7 @@ export const CustomScenarioModal: React.FC<CustomScenarioModalProps> = ({
           </div>
         </div>
 
-        {/* Existing Entities Count */}
+        {}
         <div className="p-3 rounded-md bg-[#0B0E14] border border-slate-800 mb-4 flex justify-between items-center text-xs text-slate-300">
           <span>Active Nodes: {systemState.nodes.length}</span>
           <span>Active Links: {systemState.links.length}</span>
@@ -124,7 +124,7 @@ export const CustomScenarioModal: React.FC<CustomScenarioModalProps> = ({
           </div>
         </div>
 
-        {/* JSON Import Section */}
+        {}
         {showJsonImport && (
           <div className="p-3.5 rounded-md bg-[#0B0E14] border border-slate-800 mb-4 space-y-2 text-xs">
             <label className="text-slate-300 font-medium text-xs">
@@ -154,7 +154,7 @@ export const CustomScenarioModal: React.FC<CustomScenarioModalProps> = ({
           </div>
         )}
 
-        {/* Add Entity Form */}
+        {}
         <form onSubmit={handleAddNode} className="space-y-3 mb-4 text-xs">
           <span className="font-semibold text-white block text-xs">
             Add Custom Entity Node:

@@ -17,7 +17,7 @@ export const UncertaintyGauge: React.FC<UncertaintyGaugeProps> = ({
 
   return (
     <div className="bg-[#131823] border border-slate-800 rounded-lg p-5 mb-6">
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800/80">
         <div>
           <h3 className="text-sm font-semibold text-white">

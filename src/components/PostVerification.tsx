@@ -21,7 +21,7 @@ export const PostVerification: React.FC<PostVerificationProps> = ({
         origin: { y: 0.6 }
       });
     } catch (e) {
-      // Graceful fallback
+      
     }
   }, []);
 
@@ -134,7 +134,7 @@ export const PostVerification: React.FC<PostVerificationProps> = ({
 
   return (
     <div className="bg-[#131823] border border-emerald-900/50 rounded-lg p-5 mb-6">
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800/80">
         <div>
           <h3 className="text-sm font-semibold text-white flex items-center gap-2">
@@ -150,7 +150,7 @@ export const PostVerification: React.FC<PostVerificationProps> = ({
         </span>
       </div>
 
-      {/* Checklist */}
+      {}
       <div className="space-y-2 mb-5">
         {verificationItems.map((item) => (
           <div 
@@ -171,7 +171,7 @@ export const PostVerification: React.FC<PostVerificationProps> = ({
         ))}
       </div>
 
-      {/* Action Footer */}
+      {}
       <div className="flex items-center justify-between pt-3 border-t border-slate-800/80">
         <button
           onClick={onOpenAudit}

@@ -27,34 +27,28 @@ import { parseUserIntent, parseUserIntentAsync } from './engine/intentParser';
 import { analyzeSimulationWithAI, AIRiskReasoning } from './engine/aiReasoningEngine';
 
 export function App() {
-  // Intent & Scenario Selection
+  
   const [selectedPresetId, setSelectedPresetId] = useState<string>('alex-finance-offboard');
 
-  // Main State Graph - dynamically initialized per preset
   const [realSystemState, setRealSystemState] = useState<SystemState>(() => getInitialStateForPreset('alex-finance-offboard'));
   
-  // Step Progression: 'intent' | 'shadow_rehearsed' | 'execution_running' | 'verified'
   const [appStage, setAppStage] = useState<'intent' | 'shadow_rehearsed' | 'execution_running' | 'verified'>('intent');
   
   const [currentIntent, setCurrentIntent] = useState<string>(PRESET_SCENARIOS[0].prompt);
   
-  // Simulation Results
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
   const [plans, setPlans] = useState<{ planA: ActionPlan; planB: ActionPlan; uncertainties: UncertaintyMetric[] } | null>(null);
   const [simResults, setSimResults] = useState<{ simA: SimulationResult; simB: SimulationResult } | null>(null);
   const [selectedPlanId, setSelectedPlanId] = useState<'direct_plan_a' | 'shadowproof_plan_b'>('shadowproof_plan_b');
 
-  // Active Visual Mode: 'real' | 'direct_plan_a' | 'shadowproof_plan_b'
   const [activeGraphMode, setActiveGraphMode] = useState<'real' | 'direct_plan_a' | 'shadowproof_plan_b'>('real');
 
-  // Modals & Panels
   const [showComparison, setShowComparison] = useState<boolean>(false);
   const [showApprovalModal, setShowApprovalModal] = useState<boolean>(false);
   const [showAuditModal, setShowAuditModal] = useState<boolean>(false);
   const [showCustomModal, setShowCustomModal] = useState<boolean>(false);
   const [showGeminiModal, setShowGeminiModal] = useState<boolean>(false);
 
-  // Execution & Audit
   const [approverName, setApproverName] = useState<string>('');
   const [auditLog, setAuditLog] = useState<AuditLog | null>(() => {
     try {
@@ -65,11 +59,9 @@ export function App() {
     }
   });
 
-  // AI Reasoning & Intent State
   const [parsedIntent, setParsedIntent] = useState<ParsedIntent | null>(null);
   const [aiAnalysis, setAiAnalysis] = useState<AIRiskReasoning | null>(null);
 
-  // Handle scenario preset switching
   const handlePresetSelect = (presetId: string) => {
     setSelectedPresetId(presetId);
     const newState = getInitialStateForPreset(presetId);
@@ -82,19 +74,15 @@ export function App() {
     setActiveGraphMode('real');
   };
 
-  // Trigger Dynamic Generic Simulation Engine
   const handleSimulate = async (intentText: string) => {
     setIsSimulating(true);
     setAppStage('intent');
 
-    // Simulate processing delay for realism
     await new Promise(r => setTimeout(r, 600));
 
-    // Parse target node from natural language intent text (with Gemini API support)
     const parsed = await parseUserIntentAsync(intentText, realSystemState);
     setParsedIntent(parsed);
 
-    // Run generic graph-traversal simulation engine
     const genericRes = generateGenericComparisonPlans(realSystemState, parsed.targetNodeId);
 
     setPlans({
@@ -108,7 +96,6 @@ export function App() {
       simB: genericRes.simResultB
     });
 
-    // Run AI Risk Reasoning Engine (Gemini REST API or Fallback)
     const reasoning = await analyzeSimulationWithAI(genericRes.simResultA, genericRes.simResultB, realSystemState);
     setAiAnalysis(reasoning);
 
@@ -120,19 +107,16 @@ export function App() {
     setActiveGraphMode(bestPlanId);
   };
 
-  // Open Approval Modal
   const handleInitiateApproval = () => {
     setShowApprovalModal(true);
   };
 
-  // Confirm Approval -> Launch Real System Execution
   const handleConfirmApproval = (name: string) => {
     setApproverName(name);
     setShowApprovalModal(false);
     setAppStage('execution_running');
   };
 
-  // Execution Complete -> Create Audit Trail & Show Verification
   const handleExecutionComplete = () => {
     if (!plans) return;
     const chosenPlan = selectedPlanId === 'shadowproof_plan_b' ? plans.planB : plans.planA;
@@ -173,7 +157,6 @@ export function App() {
     setActiveGraphMode(selectedPlanId);
   };
 
-  // Reset Simulator
   const handleReset = () => {
     setAppStage('intent');
     setPlans(null);
@@ -194,7 +177,7 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-[#0B0E14] text-slate-100 flex flex-col selection:bg-blue-600 selection:text-white">
-      {/* Top Navbar */}
+      {}
       <Header
         currentStep={appStage}
         isShadowActive={appStage === 'shadow_rehearsed' || appStage === 'execution_running'}
@@ -205,12 +188,12 @@ export function App() {
         setShowComparison={setShowComparison}
       />
 
-      {/* Main Content Area */}
+      {}
       <main className="flex-1 max-w-[1600px] w-full mx-auto p-4 md:p-6 space-y-6">
-        {/* Architectural Contrast Toggle Panel */}
+        {}
         {showComparison && <ModeComparison />}
 
-        {/* Natural Language Intent Input Panel */}
+        {}
         <IntentInput
           currentIntent={currentIntent}
           setCurrentIntent={setCurrentIntent}
@@ -220,7 +203,7 @@ export function App() {
           setSelectedPresetId={handlePresetSelect}
         />
 
-        {/* Gemini AI Risk Reasoning & Parsing Card (Full Width) */}
+        {}
         {plans && (
           <AIRiskCard
             parsedIntent={parsedIntent}
@@ -228,11 +211,11 @@ export function App() {
           />
         )}
 
-        {/* Grid: Topology Dependency Graph + Interactive Controls */}
+        {}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column: Interactive Dependency Graph */}
+          {}
           <div className="lg:col-span-6 flex flex-col space-y-3">
-            {/* View Mode Toggle Bar */}
+            {}
             <div className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-[#131823] border border-slate-800 text-xs">
               <span className="text-slate-400 font-medium">Topology View:</span>
               <div className="flex items-center gap-1.5">
@@ -267,14 +250,14 @@ export function App() {
               </div>
             </div>
 
-            {/* Dependency Graph Component */}
+            {}
             <DependencyGraph
               systemState={getActiveGraphState()}
               activePlanId={activeGraphMode}
             />
           </div>
 
-          {/* Right Column: Consequences & Rehearsal Output */}
+          {}
           <div className="lg:col-span-6 flex flex-col space-y-4">
             {appStage === 'intent' && !plans && (
               <div className="bg-[#131823] border border-slate-800 rounded-lg p-6 h-full flex flex-col items-center justify-center text-center space-y-3">
@@ -294,13 +277,13 @@ export function App() {
 
             {plans && (
               <>
-                {/* Consequence Breakdown for Plan A */}
+                {}
                 <ConsequenceAlerts
                   consequences={plans.planA.consequences}
                   riskScore={plans.planA.riskScore}
                 />
 
-                {/* Primary Authorization CTA Bar */}
+                {}
                 <div className="bg-[#131823] border border-emerald-900/50 rounded-lg p-4 flex items-center justify-between">
                   <div>
                     <span className="text-[10px] text-emerald-400 font-medium uppercase block">
@@ -327,16 +310,16 @@ export function App() {
           </div>
         </div>
 
-        {/* Dynamic Panels: Invariant Check + Counterfactual World Comparison + Evidence Matrix + Uncertainty Gauge + Temporal Timeline */}
+        {}
         {plans && simResults && appStage !== 'execution_running' && appStage !== 'verified' && (
           <div className="space-y-6 pt-2">
-            {/* Policy & Invariant Check Panel */}
+            {}
             <PolicyCheckPanel
               invariants={simResults.simA.invariants}
               planType={selectedPlanId}
             />
 
-            {/* Counterfactual World Comparison & Blast Radius */}
+            {}
             <BlastRadiusGauge
               blastRadius={simResults.simA.blastRadius}
               planARisk={plans.planA.riskScore}
@@ -344,7 +327,7 @@ export function App() {
               selectedPlanId={selectedPlanId}
             />
 
-            {/* Side-by-Side Plan Evidence Matrix */}
+            {}
             <EvidenceMatrix
               planA={plans.planA}
               planB={plans.planB}
@@ -355,20 +338,20 @@ export function App() {
               }}
             />
 
-            {/* Temporal Consequence Timeline */}
+            {}
             <TemporalTimeline
               timeline={simResults.simA.temporalConsequences}
               planType={selectedPlanId}
             />
 
-            {/* Dynamic Uncertainty Gauge */}
+            {}
             <UncertaintyGauge
               uncertainties={plans.uncertainties}
             />
           </div>
         )}
 
-        {/* Live Real System Execution Terminal Panel */}
+        {}
         {appStage === 'execution_running' && plans && (
           <RealExecutionConsole
             plan={selectedPlanId === 'shadowproof_plan_b' ? plans.planB : plans.planA}
@@ -377,7 +360,7 @@ export function App() {
           />
         )}
 
-        {/* Post-Execution Health Verification Panel */}
+        {}
         {appStage === 'verified' && (
           <PostVerification
             onReset={handleReset}
@@ -387,7 +370,7 @@ export function App() {
         )}
       </main>
 
-      {/* Human Approval Modal */}
+      {}
       {plans && (
         <HumanApprovalModal
           isOpen={showApprovalModal}
@@ -397,14 +380,14 @@ export function App() {
         />
       )}
 
-      {/* Immutable Compliance Audit Trail Modal */}
+      {}
       <AuditTrailModal
         isOpen={showAuditModal}
         onClose={() => setShowAuditModal(false)}
         auditLog={auditLog}
       />
 
-      {/* Custom Graph Scenario Editor Modal */}
+      {}
       <CustomScenarioModal
         isOpen={showCustomModal}
         onClose={() => setShowCustomModal(false)}
@@ -412,7 +395,7 @@ export function App() {
         onUpdateState={(newState) => {
           setRealSystemState(newState);
           if (plans) {
-            // Re-evaluate generic simulation dynamically on custom state change!
+            
             const parsed = parseUserIntent(currentIntent, newState);
             const genericRes = generateGenericComparisonPlans(newState, parsed.targetNodeId);
             setPlans({
@@ -428,7 +411,7 @@ export function App() {
         }}
       />
 
-      {/* Gemini AI Settings Modal */}
+      {}
       <GeminiSettingsModal
         isOpen={showGeminiModal}
         onClose={() => setShowGeminiModal(false)}
@@ -436,4 +419,4 @@ export function App() {
     </div>
   );
 }
-
+

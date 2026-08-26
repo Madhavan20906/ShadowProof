@@ -8,11 +8,6 @@ export interface AIRiskReasoning {
   confidenceScore: number;
 }
 
-/**
- * Consumes the authoritative outputs of the Symbolic Engine (SimulationResult)
- * and generates deep AI risk reasoning using Google Gemini (or fallback).
- * Note: The Symbolic Engine remains authoritative for all safety & invariant decisions.
- */
 interface GeminiModelInfo {
   name: string;
   supportedGenerationMethods?: string[];
@@ -32,7 +27,7 @@ export async function analyzeSimulationWithAI(
   const violatedInvariants = planAResult.invariants.filter(i => i.status === 'violated');
 
   if (!apiKey) {
-    // Offline deterministic fallback reasoning based directly on symbolic results
+    
     return {
       structuralSummary: `Symbolic engine identified ${planAResult.consequences.length} cascading breaking failure(s) (${criticalCount} Critical) across graph fanout depth of ${planAResult.blastRadius.indirectNodesCount} node(s).`,
       keyVulnerabilities: planAResult.consequences.map(c => `${c.title}: ${c.businessImpact}`),

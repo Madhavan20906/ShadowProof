@@ -761,4 +761,3 @@ export const PRESET_SCENARIOS: PresetScenario[] = [
     accentColor: "#10B981"
   }
 ];
-

@@ -42,8 +42,8 @@ export interface SystemNode {
 
 export interface DependencyLink {
   id: string;
-  source: string; // Node ID
-  target: string; // Node ID
+  source: string; 
+  target: string; 
   type: LinkType;
   description: string;
   status: LinkStatus;
@@ -70,7 +70,7 @@ export interface Consequence {
   description: string;
   affectedNodeId: string;
   affectedNodeName: string;
-  rootCauseChain: string[]; // List of node names showing flow: Alex -> Credential -> Payroll Bot
+  rootCauseChain: string[]; 
   businessImpact: string;
   technicalRisk: string;
 }
@@ -91,7 +91,7 @@ export interface ActionPlan {
   type: 'direct_plan_a' | 'shadowproof_plan_b';
   summary: string;
   steps: ActionStep[];
-  riskScore: number; // 0 to 100
+  riskScore: number; 
   brokenWorkflowsCount: number;
   orphanedResourcesCount: number;
   crashedAutomationsCount: number;
@@ -102,7 +102,7 @@ export interface ActionPlan {
 
 export interface UncertaintyMetric {
   aspect: string;
-  confidenceScore: number; // 0 to 100
+  confidenceScore: number; 
   reasoning: string;
   untestedVariables: string[];
   knownFacts?: string[];
@@ -198,4 +198,4 @@ export interface PresetScenario {
   iconName: string;
   accentColor: string;
 }
-
+

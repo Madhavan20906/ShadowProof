@@ -33,7 +33,7 @@ export function TemporalTimeline({ timeline, planType }: TemporalTimelineProps) 
 
           return (
             <div key={idx} className="relative">
-              {/* Marker Dot */}
+              {}
               <div className={`absolute -left-[25px] top-1.5 w-2.5 h-2.5 rounded-full ${
                 isCritical 
                   ? 'bg-red-500' 

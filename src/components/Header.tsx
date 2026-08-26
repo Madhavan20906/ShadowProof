@@ -25,7 +25,7 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="bg-[#131823] border-b border-slate-800/80 px-6 py-3.5 sticky top-0 z-40">
       <div className="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-4">
-        {/* Brand Logo & Title */}
+        {}
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-blue-600/15 border border-blue-500/30 flex items-center justify-center text-blue-400">
             <Shield className="w-5 h-5" />
@@ -45,9 +45,9 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* System Status Indicators */}
+        {}
         <div className="flex items-center gap-3 text-xs">
-          {/* AI Engine Status */}
+          {}
           <button
             onClick={onOpenGeminiModal}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-md border transition-all cursor-pointer ${
@@ -63,14 +63,14 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
           </button>
 
-          {/* Target System Status */}
+          {}
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-slate-900/90 border border-slate-800">
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
             <span className="text-slate-400">Target System:</span>
             <span className="text-slate-200 font-medium">Connected</span>
           </div>
 
-          {/* Sandbox Status */}
+          {}
           <div className={`flex items-center gap-2 px-3 py-1.5 rounded-md border transition-all ${
             isShadowActive 
               ? 'bg-blue-950/30 border-blue-500/40 text-blue-300' 
@@ -84,7 +84,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Navigation / Configuration Actions */}
+        {}
         <div className="flex items-center gap-2">
           <button
             onClick={onOpenGeminiModal}
@@ -124,7 +124,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Safety Notice Banner */}
+      {}
       <div className="max-w-7xl mx-auto mt-3 pt-2 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
         <div className="flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />

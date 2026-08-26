@@ -15,10 +15,10 @@ export const AIRiskCard: React.FC<AIRiskCardProps> = ({ parsedIntent, aiAnalysis
 
   return (
     <div className="bg-[#131823] border border-indigo-900/60 rounded-lg p-5 mb-6 relative overflow-hidden shadow-lg">
-      {/* Background Subtle Gradient Glow */}
+      {}
       <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/5 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Card Header & Engine Status */}
+      {}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-800">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-indigo-950/80 border border-indigo-800/60 flex items-center justify-center text-indigo-400">
@@ -34,7 +34,7 @@ export const AIRiskCard: React.FC<AIRiskCardProps> = ({ parsedIntent, aiAnalysis
           </div>
         </div>
 
-        {/* Engine Badge */}
+        {}
         <div className="flex items-center gap-2">
           {isLLM ? (
             <span className="px-3 py-1 rounded-full text-[11px] font-mono font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-800/80 flex items-center gap-1.5 shadow-sm">
@@ -50,7 +50,7 @@ export const AIRiskCard: React.FC<AIRiskCardProps> = ({ parsedIntent, aiAnalysis
         </div>
       </div>
 
-      {/* AI Intent Parsing Explanation */}
+      {}
       {parsedIntent?.aiExplanation && (
         <div className="mb-4 p-3 rounded-md bg-[#0B0E14] border border-indigo-950 flex items-start gap-2.5 text-xs text-indigo-200 font-mono">
           <Zap className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
@@ -63,10 +63,10 @@ export const AIRiskCard: React.FC<AIRiskCardProps> = ({ parsedIntent, aiAnalysis
         </div>
       )}
 
-      {/* AI Deep Risk Reasoning Grid */}
+      {}
       {aiAnalysis && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-          {/* Structural Summary */}
+          {}
           <div className="p-3.5 rounded-md bg-[#0B0E14] border border-slate-800 space-y-1">
             <span className="text-[10px] text-slate-400 font-medium uppercase block">
               Structural Failure Summary
@@ -76,7 +76,7 @@ export const AIRiskCard: React.FC<AIRiskCardProps> = ({ parsedIntent, aiAnalysis
             </p>
           </div>
 
-          {/* Compliance & Audit Impact */}
+          {}
           <div className="p-3.5 rounded-md bg-[#0B0E14] border border-slate-800 space-y-1">
             <span className="text-[10px] text-slate-400 font-medium uppercase block">
               Compliance & Audit Impact
@@ -86,7 +86,7 @@ export const AIRiskCard: React.FC<AIRiskCardProps> = ({ parsedIntent, aiAnalysis
             </p>
           </div>
 
-          {/* Recommended Action Rationale */}
+          {}
           <div className="p-3.5 rounded-md bg-[#0B0E14] border border-slate-800 space-y-1 md:col-span-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] text-slate-400 font-medium uppercase block">

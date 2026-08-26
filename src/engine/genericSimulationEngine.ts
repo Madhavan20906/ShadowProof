@@ -14,10 +14,6 @@ export function cloneState(state: SystemState): SystemState {
   return JSON.parse(JSON.stringify(state));
 }
 
-/**
- * Generates a deterministic non-repudiation state snapshot hash.
- * Computes a robust checksum over node and link topology states.
- */
 export function generateSnapshotHash(state: SystemState): string {
   const str = JSON.stringify(state.nodes.map(n => ({ id: n.id, status: n.status }))) + 
               JSON.stringify(state.links.map(l => ({ id: l.id, status: l.status })));
@@ -34,9 +30,6 @@ export function generateSnapshotHash(state: SystemState): string {
   return `STATE-${hashHex.padStart(12, '0')}`;
 }
 
-/**
- * Declarative Graph Invariant Interface
- */
 export interface DeclarativeInvariant {
   code: string;
   name: string;
@@ -45,9 +38,6 @@ export interface DeclarativeInvariant {
   evaluate: (state: SystemState, consequences: Consequence[]) => 'passed' | 'violated' | 'warning';
 }
 
-/**
- * System Invariant Registry
- */
 export const SYSTEM_INVARIANTS_REGISTRY: DeclarativeInvariant[] = [
   {
     code: 'INV-01',
@@ -86,9 +76,6 @@ export const SYSTEM_INVARIANTS_REGISTRY: DeclarativeInvariant[] = [
   }
 ];
 
-/**
- * Formulaic Computed Risk & Severity Metric Derivation Engine
- */
 function computeNodeRiskMetrics(node: SystemNode, connectedLinksCount: number) {
   const monetary = node.meta?.monetaryValue || null;
   const connections = node.meta?.connections || null;
@@ -96,7 +83,6 @@ function computeNodeRiskMetrics(node: SystemNode, connectedLinksCount: number) {
   const schedule = node.meta?.schedule || null;
   const sla = node.meta?.slaHours || null;
 
-  // Base criticality score calculation
   let criticalityWeight = 10;
   if (monetary) criticalityWeight += 35;
   if (connections) criticalityWeight += 30;
@@ -141,11 +127,9 @@ export function simulatePlanAGeneric(
     throw new Error(`Target node '${targetNodeId}' not found in system graph state.`);
   }
 
-  // 1. Direct Mutation
   targetNode.status = 'deprovisioned';
   logs.push(`[MUTATION] Target Node '${targetNode.name}' (${targetNode.type.toUpperCase()}) status set to DEPROVISIONED.`);
 
-  // Sever all direct links connected to target
   let severedLinksCount = 0;
   shadow.links.forEach(link => {
     if (link.source === targetNode.id || link.target === targetNode.id) {
@@ -155,17 +139,14 @@ export function simulatePlanAGeneric(
     }
   });
 
-  // 2. Traversal & Cascade Evaluation
   const directImpactedIds = new Set<string>([targetNode.id]);
   const indirectImpactedIds = new Set<string>();
 
-  // Find all nodes directly connected to target
   shadow.links.forEach(l => {
     if (l.source === targetNode.id) directImpactedIds.add(l.target);
     if (l.target === targetNode.id) directImpactedIds.add(l.source);
   });
 
-  // Rule 1: Approval Workflows (Identity or Infra mutation)
   shadow.nodes.filter(n => n.type === 'workflow').forEach(workflow => {
     const approverLinks = shadow.links.filter(l => l.target === workflow.id && (l.type === 'approves' || l.type === 'requires') && l.status !== 'severed');
     const activeApprovers = approverLinks.map(l => shadow.nodes.find(n => n.id === l.source)).filter(n => n && n.status === 'active');
@@ -200,7 +181,6 @@ export function simulatePlanAGeneric(
     }
   });
 
-  // Rule 2: Resource Custody & Access Ownership
   shadow.nodes.filter(n => n.type === 'resource' && n.id !== targetNode.id).forEach(resource => {
     const ownerLinks = shadow.links.filter(l => l.target === resource.id && l.type === 'owns' && l.status !== 'severed');
     const activeOwners = ownerLinks.map(l => shadow.nodes.find(n => n.id === l.source)).filter(n => n && n.status === 'active');
@@ -231,7 +211,6 @@ export function simulatePlanAGeneric(
     }
   });
 
-  // Rule 3: Credentials & Automations
   shadow.nodes.filter(n => n.type === 'credential').forEach(cred => {
     const isTargetCred = cred.id.includes(targetNode.id) || 
                          cred.name.toLowerCase().includes(targetNode.name.toLowerCase().split(' ')[0]) ||
@@ -271,7 +250,6 @@ export function simulatePlanAGeneric(
     }
   });
 
-  // Rule 4: Governance Role Vacancy
   shadow.nodes.filter(n => n.type === 'role').forEach(role => {
     const roleLinks = shadow.links.filter(l => l.target === role.id && l.status !== 'severed');
     const activeHolders = roleLinks.map(l => shadow.nodes.find(n => n.id === l.source)).filter(n => n && n.status === 'active');
@@ -300,7 +278,6 @@ export function simulatePlanAGeneric(
     }
   });
 
-  // Rule 5: Multi-Hop Feeds & Replicates (Database / Infrastructure Teardown)
   if (targetNode.type === 'resource') {
     shadow.links.filter(l => l.source === targetNode.id).forEach(link => {
       const downstream = shadow.nodes.find(n => n.id === link.target);
@@ -330,7 +307,6 @@ export function simulatePlanAGeneric(
     });
   }
 
-  // 3. Declarative Invariants Evaluation
   SYSTEM_INVARIANTS_REGISTRY.forEach((rule, idx) => {
     const status = rule.evaluate(shadow, consequences);
     invariants.push({
@@ -343,7 +319,6 @@ export function simulatePlanAGeneric(
     });
   });
 
-  // 4. Temporal Timeline Breakdown
   temporalConsequences.push({
     timeframe: 'T+0s (Immediate)',
     title: `Directory & API Session Revocation for ${targetNode.name}`,
@@ -381,7 +356,6 @@ export function simulatePlanAGeneric(
     });
   }
 
-  // 5. Blast Radius Calculation
   const criticalCount = consequences.filter(c => c.severity === 'critical').length;
   const blastRadius: BlastRadius = {
     directNodesCount: directImpactedIds.size,
@@ -391,14 +365,12 @@ export function simulatePlanAGeneric(
     impactedDepartments: Array.from(new Set(shadow.nodes.map(n => n.meta?.team || 'Infrastructure').filter(Boolean)))
   };
 
-  // 6. Formulaic Risk Score Calculation
   const severitySum = consequences.reduce((acc, c) => {
     return acc + (c.severity === 'critical' ? 24 : c.severity === 'high' ? 15 : c.severity === 'medium' ? 8 : 4);
   }, 0);
   const rawRisk = severitySum + (severedLinksCount * 5) + (indirectImpactedIds.size * 3);
   const riskScore = Math.min(99, Math.max(8, rawRisk));
 
-  // 7. Dynamic Measured Coverage & Confidence Metrics derivation
   const evaluatedNodesCount = directImpactedIds.size + indirectImpactedIds.size;
   const totalNodesCount = Math.max(1, shadow.nodes.length);
   const dependencyCoverage = Math.min(100, Math.max(65, Math.round((evaluatedNodesCount / totalNodesCount) * 100 + 40)));
@@ -431,4 +403,4 @@ export function simulatePlanAGeneric(
     }
   };
 }
-
+

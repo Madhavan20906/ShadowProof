@@ -47,7 +47,7 @@ export const IntentInput: React.FC<IntentInputProps> = ({
 
   return (
     <div className="bg-[#131823] border border-slate-800 rounded-lg p-5 mb-6">
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-sm font-semibold text-white">
@@ -59,7 +59,7 @@ export const IntentInput: React.FC<IntentInputProps> = ({
         </div>
       </div>
 
-      {/* Preset Scenario Selector */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         {PRESET_SCENARIOS.map((scenario) => {
           const isSelected = selectedPresetId === scenario.id;
@@ -94,7 +94,7 @@ export const IntentInput: React.FC<IntentInputProps> = ({
         })}
       </div>
 
-      {/* AI Engine Indicator Bar */}
+      {}
       <div className="flex items-center justify-between mb-2 px-1">
         <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1.5">
           <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
@@ -113,7 +113,7 @@ export const IntentInput: React.FC<IntentInputProps> = ({
         )}
       </div>
 
-      {/* Natural Language Prompt Input Bar */}
+      {}
       <form onSubmit={handleSubmit} className="flex items-center gap-3">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />

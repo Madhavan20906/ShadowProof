@@ -75,7 +75,7 @@ export function PolicyCheckPanel({ invariants, planType }: PolicyCheckPanelProps
         })}
       </div>
 
-      {/* Enterprise Surface Connectors Bar */}
+      {}
       <div className="pt-3 border-t border-slate-800/80">
         <div className="flex items-center gap-2 mb-2">
           <Layers className="w-3.5 h-3.5 text-blue-400" />
@@ -93,4 +93,4 @@ export function PolicyCheckPanel({ invariants, planType }: PolicyCheckPanelProps
     </div>
   );
 }
-
+

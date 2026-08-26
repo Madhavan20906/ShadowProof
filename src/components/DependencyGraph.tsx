@@ -8,7 +8,7 @@ import {
 
 interface DependencyGraphProps {
   systemState: SystemState;
-  activePlanId: string; // 'real' | 'direct_plan_a' | 'shadowproof_plan_b'
+  activePlanId: string; 
   onSelectNode?: (node: SystemNode) => void;
 }
 
@@ -17,25 +17,21 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
   activePlanId,
   onSelectNode
 }) => {
-  // Layout & View State
+  
   const [heightMode, setHeightMode] = useState<'compact' | 'expanded'>('compact');
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   
-  // Transform State (Zoom & Pan)
   const [zoom, setZoom] = useState<number>(1);
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  // Custom Node Positions (allows node dragging & auto-arrange)
   const [customPositions, setCustomPositions] = useState<Record<string, { x: number; y: number }>>({});
 
-  // Search, Filter & Inspection State
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<string | null>(null);
   const [hoveredNode, setHoveredNode] = useState<SystemNode | null>(null);
   const [selectedNode, setSelectedNode] = useState<SystemNode | null>(null);
   const [showFilters, setShowFilters] = useState<boolean>(false);
 
-  // Interaction Drag States
   const [isPanning, setIsPanning] = useState<boolean>(false);
   const [panStart, setPanStart] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
@@ -44,7 +40,6 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
   const canvasRef = useRef<HTMLDivElement>(null);
   const modalCanvasRef = useRef<HTMLDivElement>(null);
 
-  // Re-sync positions when system state updates or nodes change
   useEffect(() => {
     const initialPos: Record<string, { x: number; y: number }> = {};
     systemState.nodes.forEach(node => {
@@ -56,12 +51,10 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
     setCustomPositions(initialPos);
   }, [systemState]);
 
-  // Helper to get effective node position
   const getNodePos = useCallback((node: SystemNode) => {
     return customPositions[node.id] || { x: node.x ?? 100, y: node.y ?? 100 };
   }, [customPositions]);
 
-  // Auto-fit bounds calculation
   const autoFitCanvas = useCallback((isModalView = false) => {
     const targetRef = isModalView ? modalCanvasRef : canvasRef;
     if (!targetRef.current || systemState.nodes.length === 0) return;
@@ -95,7 +88,6 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
     setPan({ x: calculatedPanX, y: calculatedPanY });
   }, [systemState.nodes, getNodePos]);
 
-  // Trigger auto-fit when entering fullscreen or changing height mode
   useEffect(() => {
     const timer = setTimeout(() => {
       autoFitCanvas(isFullscreen);
@@ -103,12 +95,11 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
     return () => clearTimeout(timer);
   }, [isFullscreen, heightMode, autoFitCanvas]);
 
-  // Auto-arrange nodes in structured topological columns
   const handleAutoArrange = () => {
     const newPositions: Record<string, { x: number; y: number }> = {};
-    const tier0: SystemNode[] = []; // Users & Service accounts
-    const tier1: SystemNode[] = []; // Teams, Roles & Credentials
-    const tier2: SystemNode[] = []; // Workflows, Resources & Automations
+    const tier0: SystemNode[] = []; 
+    const tier1: SystemNode[] = []; 
+    const tier2: SystemNode[] = []; 
 
     systemState.nodes.forEach(node => {
       if (node.type === 'user') {
@@ -141,7 +132,6 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
     setTimeout(() => autoFitCanvas(isFullscreen), 50);
   };
 
-  // Center view on specific node
   const handleCenterOnNode = (node: SystemNode, isModal = isFullscreen) => {
     const targetRef = isModal ? modalCanvasRef : canvasRef;
     if (!targetRef.current) return;
@@ -155,7 +145,6 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
     setSelectedNode(node);
   };
 
-  // Pan Mouse Handlers
   const handleMouseDownCanvas = (e: React.MouseEvent) => {
     if (draggingNodeId) return;
     setIsPanning(true);
@@ -190,14 +179,12 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
     setDraggingNodeId(null);
   };
 
-  // Wheel Zoom Handler
   const handleWheelCanvas = (e: React.WheelEvent) => {
     e.preventDefault();
     const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
     setZoom(prev => Math.min(Math.max(prev * zoomFactor, 0.35), 2.5));
   };
 
-  // Node Icon Mapping
   const getNodeIcon = (type: string, status: string) => {
     const isFailed = status === 'failed' || status === 'orphaned';
     const colorClass = isFailed ? 'text-red-400' : 'text-blue-400';
@@ -265,7 +252,6 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
     };
   };
 
-  // Filter & Search Logic
   const filteredNodes = systemState.nodes.filter(node => {
     const matchesSearch = searchQuery === '' || 
       node.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -279,7 +265,6 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
 
   const nodeTypes = ['all', 'user', 'team', 'workflow', 'resource', 'automation', 'credential', 'role'];
 
-  // Core Canvas Renderer Component
   const renderCanvasContent = (isModal: boolean) => {
     const containerRef = isModal ? modalCanvasRef : canvasRef;
 
@@ -293,7 +278,7 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
         onWheel={handleWheelCanvas}
         className={`relative flex-1 bg-[#0B0E14] rounded-md border border-slate-800/80 overflow-hidden cursor-${isPanning ? 'grabbing' : 'grab'} select-none`}
       >
-        {/* Grid Pattern Background */}
+        {}
         <div 
           className="absolute inset-0 opacity-15 pointer-events-none"
           style={{
@@ -303,7 +288,7 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
           }}
         />
 
-        {/* Zoomable & Pannable Transform Container */}
+        {}
         <div 
           style={{
             transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
@@ -351,7 +336,7 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
               </marker>
             </defs>
 
-            {/* Link Connection Lines */}
+            {}
             {systemState.links.map((link) => {
               const sourceNode = systemState.nodes.find(n => n.id === link.source);
               const targetNode = systemState.nodes.find(n => n.id === link.target);
@@ -401,7 +386,7 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
             })}
           </svg>
 
-          {/* Node Cards Layer */}
+          {}
           {systemState.nodes.map((node) => {
             const pos = getNodePos(node);
             const colors = getNodeColor(node);
@@ -463,7 +448,7 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
           })}
         </div>
 
-        {/* Floating Zoom & Layout Controls Overlay (Bottom-Right) */}
+        {}
         <div className="absolute bottom-3 left-3 z-30 flex items-center gap-1 bg-[#131823]/90 backdrop-blur-md p-1.5 rounded-lg border border-slate-800 text-xs shadow-xl">
           <button
             onClick={() => setZoom(z => Math.max(z - 0.15, 0.4))}
@@ -514,7 +499,7 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
           </button>
         </div>
 
-        {/* Floating Node Hover Tooltip (Bottom Right) */}
+        {}
         {hoveredNode && !selectedNode && (
           <div className="absolute bottom-3 right-3 max-w-xs bg-[#131823]/95 backdrop-blur-md p-3 rounded-lg border border-slate-700 z-30 text-xs shadow-xl pointer-events-none">
             <div className="flex items-center justify-between mb-1 pb-1 border-b border-slate-800">
@@ -533,7 +518,7 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
           </div>
         )}
 
-        {/* Selected Node Detailed Inspector Sidebar Overlay */}
+        {}
         {selectedNode && (
           <div className="absolute top-3 right-3 w-80 bg-[#131823]/95 backdrop-blur-md p-4 rounded-lg border border-slate-700 z-40 text-xs shadow-2xl space-y-3 max-h-[calc(100%-24px)] overflow-y-auto">
             <div className="flex items-start justify-between pb-2 border-b border-slate-800">
@@ -560,7 +545,7 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
               {selectedNode.description}
             </p>
 
-            {/* Metadata Table */}
+            {}
             <div className="bg-[#0B0E14] p-2.5 rounded border border-slate-800/80 space-y-1.5">
               <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
                 Metadata & State:
@@ -573,13 +558,13 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
               ))}
             </div>
 
-            {/* Direct Topology Connections */}
+            {}
             <div className="space-y-2 pt-1">
               <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
                 Direct Graph Connections:
               </span>
 
-              {/* Incoming Dependencies */}
+              {}
               <div>
                 <span className="text-[10px] text-slate-400 block mb-1 flex items-center gap-1">
                   <ArrowLeft className="w-3 h-3 text-blue-400" /> Incoming Dependents:
@@ -607,7 +592,7 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
                 </div>
               </div>
 
-              {/* Outgoing Dependencies */}
+              {}
               <div>
                 <span className="text-[10px] text-slate-400 block mb-1 flex items-center gap-1">
                   <ArrowRight className="w-3 h-3 text-emerald-400" /> Outgoing Dependencies:
@@ -652,11 +637,11 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
 
   return (
     <>
-      {/* Standard In-Dashboard Container */}
+      {}
       <div className={`bg-[#131823] border border-slate-800 rounded-lg p-4 flex flex-col transition-all duration-300 ${
         heightMode === 'expanded' ? 'h-[760px]' : 'h-[530px]'
       }`}>
-        {/* Header Toolbar */}
+        {}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-3 pb-3 border-b border-slate-800/80">
           <div>
             <div className="flex items-center gap-2">
@@ -674,9 +659,9 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
             </p>
           </div>
 
-          {/* Action Toolbar */}
+          {}
           <div className="flex items-center gap-2">
-            {/* Search Input */}
+            {}
             <div className="relative">
               <Search className="w-3.5 h-3.5 absolute left-2.5 top-2 text-slate-400" />
               <input
@@ -696,7 +681,7 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
               )}
             </div>
 
-            {/* Filter Toggle */}
+            {}
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`p-1.5 rounded border text-xs flex items-center gap-1 transition-colors ${
@@ -707,7 +692,7 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
               <Filter className="w-3.5 h-3.5" />
             </button>
 
-            {/* Height Mode Toggle */}
+            {}
             <button
               onClick={() => setHeightMode(m => m === 'compact' ? 'expanded' : 'compact')}
               className="px-2.5 py-1 rounded bg-[#0B0E14] border border-slate-800 text-xs text-slate-300 hover:text-white hover:border-slate-700 transition-colors flex items-center gap-1 font-medium"
@@ -726,7 +711,7 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
               )}
             </button>
 
-            {/* Fullscreen Modal Toggle */}
+            {}
             <button
               onClick={() => setIsFullscreen(true)}
               className="p-1.5 rounded bg-blue-600 hover:bg-blue-500 text-white transition-colors"
@@ -737,7 +722,7 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
           </div>
         </div>
 
-        {/* Collapsible Type Filter Pills */}
+        {}
         {showFilters && (
           <div className="flex flex-wrap items-center gap-1.5 mb-3 pb-2 border-b border-slate-800/60 text-xs">
             <span className="text-[10px] text-slate-400 uppercase font-semibold mr-1">Filter Type:</span>
@@ -757,14 +742,14 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
           </div>
         )}
 
-        {/* Inline Canvas */}
+        {}
         {renderCanvasContent(false)}
       </div>
 
-      {/* Fullscreen Expandable Modal View */}
+      {}
       {isFullscreen && (
         <div className="fixed inset-0 z-50 bg-[#0B0E14]/95 backdrop-blur-lg flex flex-col p-4 md:p-6 overflow-hidden animate-in fade-in duration-200">
-          {/* Fullscreen Header Bar */}
+          {}
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
             <div>
               <div className="flex items-center gap-3">
@@ -782,7 +767,7 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
             </div>
 
             <div className="flex items-center gap-3">
-              {/* Filter Pills in Modal */}
+              {}
               <div className="hidden md:flex items-center gap-1.5 bg-[#131823] p-1 rounded-lg border border-slate-800 text-xs">
                 {nodeTypes.map(t => (
                   <button
@@ -799,7 +784,7 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
                 ))}
               </div>
 
-              {/* Modal Search */}
+              {}
               <div className="relative">
                 <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
                 <input
@@ -811,7 +796,7 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
                 />
               </div>
 
-              {/* Close Fullscreen Button */}
+              {}
               <button
                 onClick={() => setIsFullscreen(false)}
                 className="p-2 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors flex items-center gap-1 text-xs font-medium"
@@ -822,11 +807,11 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
             </div>
           </div>
 
-          {/* Expanded Modal Canvas */}
+          {}
           {renderCanvasContent(true)}
         </div>
       )}
     </>
   );
 };
-
+

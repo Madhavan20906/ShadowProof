@@ -62,7 +62,7 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80">
       <div className="bg-[#131823] max-w-2xl w-full p-6 border border-slate-800 rounded-lg shadow-xl relative max-h-[90vh] flex flex-col">
-        {/* Close Button */}
+        {}
         <button 
           onClick={onClose}
           className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded bg-slate-900 border border-slate-800"
@@ -70,7 +70,7 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({
           <X className="w-4 h-4" />
         </button>
 
-        {/* Modal Header */}
+        {}
         <div className="flex items-center gap-3 mb-4 pb-3 border-b border-slate-800">
           <div className="p-2.5 rounded bg-amber-950/40 border border-amber-900/40 text-amber-400">
             <FileText className="w-5 h-5" />
@@ -90,9 +90,9 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({
           </div>
         </div>
 
-        {/* Content */}
+        {}
         <div className="flex-1 overflow-y-auto pr-1 space-y-3 text-xs">
-          {/* Section 1: Overview */}
+          {}
           <div className="p-3 rounded-md bg-[#0B0E14] border border-slate-800 space-y-1">
             <div className="flex justify-between text-slate-400 text-[11px] font-mono">
               <span>Timestamp: {auditLog.timestamp}</span>
@@ -103,7 +103,7 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({
             </div>
           </div>
 
-          {/* Section 2: Comparison */}
+          {}
           <div className="p-3 rounded-md bg-[#0B0E14] border border-slate-800 space-y-2">
             <h3 className="font-semibold text-white text-xs">
               Simulated Plan Comparison
@@ -120,7 +120,7 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({
             </div>
           </div>
 
-          {/* Section 3: Approval */}
+          {}
           <div className="p-3 rounded-md bg-[#0B0E14] border border-slate-800 space-y-1 text-slate-300">
             <h3 className="font-semibold text-white text-xs mb-1">
               Approval Authorization
@@ -130,7 +130,7 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({
             <div>Executed Plan: <span className="text-blue-400 font-mono">{auditLog.selectedPlanId}</span></div>
           </div>
 
-          {/* Section 4: Post Verification */}
+          {}
           <div className="p-3 rounded-md bg-[#0B0E14] border border-slate-800 space-y-1.5">
             <h3 className="font-semibold text-white text-xs mb-1">
               Post-Flight Verification Checklist
@@ -144,7 +144,7 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({
           </div>
         </div>
 
-        {/* Footer */}
+        {}
         <div className="flex items-center justify-between pt-4 mt-2 border-t border-slate-800">
           <span className="text-[11px] text-slate-500 font-mono">
             SHA-256 Digest Verified

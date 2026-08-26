@@ -33,7 +33,7 @@ export const ConsequenceAlerts: React.FC<ConsequenceAlertsProps> = ({
 
   return (
     <div className="bg-[#131823] border border-red-900/50 rounded-lg p-5 mb-6">
-      {/* Consequence Header */}
+      {}
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800/80">
         <div>
           <h3 className="text-sm font-semibold text-white flex items-center gap-2">
@@ -53,14 +53,14 @@ export const ConsequenceAlerts: React.FC<ConsequenceAlertsProps> = ({
         </div>
       </div>
 
-      {/* List of Consequences */}
+      {}
       <div className="space-y-3">
         {consequences.map((cons) => (
           <div 
             key={cons.id}
             className="p-4 rounded-md border border-red-950 bg-[#0B0E14] space-y-2"
           >
-            {/* Title & Severity */}
+            {}
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2">
                 <XCircle className="w-4 h-4 text-red-400 shrink-0" />
@@ -73,12 +73,12 @@ export const ConsequenceAlerts: React.FC<ConsequenceAlertsProps> = ({
               </span>
             </div>
 
-            {/* Human Readable Description */}
+            {}
             <p className="text-xs text-slate-300 leading-relaxed">
               {cons.description}
             </p>
 
-            {/* Root Cause Dependency Chain */}
+            {}
             <div className="p-2 rounded bg-slate-900 border border-slate-800 text-[11px]">
               <div className="text-[10px] text-slate-400 font-medium mb-1">
                 Root Cause Chain:
@@ -97,7 +97,7 @@ export const ConsequenceAlerts: React.FC<ConsequenceAlertsProps> = ({
               </div>
             </div>
 
-            {/* Business Impact & Technical Risk */}
+            {}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] pt-1">
               <div className="p-2 rounded bg-slate-900/60 border border-slate-800 text-slate-300">
                 <span className="text-slate-400 block text-[10px] font-medium">Business Impact:</span>

@@ -38,7 +38,7 @@ export const HumanApprovalModal: React.FC<HumanApprovalModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80">
       <div className="bg-[#131823] max-w-xl w-full p-6 border border-slate-800 rounded-lg shadow-xl relative">
-        {/* Close Button */}
+        {}
         <button 
           onClick={onClose}
           className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded bg-slate-900 border border-slate-800"
@@ -46,7 +46,7 @@ export const HumanApprovalModal: React.FC<HumanApprovalModalProps> = ({
           <X className="w-4 h-4" />
         </button>
 
-        {/* Modal Header */}
+        {}
         <div className="flex items-center gap-3 mb-4 pb-3 border-b border-slate-800">
           <div className="p-2.5 rounded bg-blue-950/40 border border-blue-900/40 text-blue-400">
             <Lock className="w-5 h-5" />
@@ -61,7 +61,7 @@ export const HumanApprovalModal: React.FC<HumanApprovalModalProps> = ({
           </div>
         </div>
 
-        {/* Selected Plan Summary Banner */}
+        {}
         <div className={`p-3.5 rounded-md border mb-4 text-xs ${
           isPlanBSafe ? 'bg-blue-950/20 border-blue-900/40 text-slate-300' : 'bg-red-950/20 border-red-900/40 text-slate-300'
         }`}>
@@ -72,7 +72,7 @@ export const HumanApprovalModal: React.FC<HumanApprovalModalProps> = ({
           <p className="text-[11px] text-slate-400 leading-relaxed">{selectedPlan.summary}</p>
         </div>
 
-        {/* Safety Verification Checklist */}
+        {}
         <div className="space-y-2 mb-4 text-xs">
           <span className="text-xs font-semibold text-white block">
             Pre-Execution Safety Verification Checklist:
@@ -121,7 +121,7 @@ export const HumanApprovalModal: React.FC<HumanApprovalModalProps> = ({
           </label>
         </div>
 
-        {/* Form */}
+        {}
         <form onSubmit={handleSubmit} className="space-y-4 pt-3 border-t border-slate-800">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
             <div>
@@ -150,7 +150,7 @@ export const HumanApprovalModal: React.FC<HumanApprovalModalProps> = ({
             </div>
           </div>
 
-          {/* Action Buttons */}
+          {}
           <div className="flex items-center justify-end gap-3 pt-2">
             <button
               type="button"

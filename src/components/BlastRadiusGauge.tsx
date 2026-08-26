@@ -22,9 +22,9 @@ export function BlastRadiusGauge({ blastRadius, planARisk, planBRisk, selectedPl
         </div>
       </div>
 
-      {/* 3 State Comparison Cards */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        {/* Baseline Status Quo */}
+        {}
         <div className="p-3.5 rounded-md bg-[#0B0E14] border border-slate-800 text-slate-300 space-y-1.5">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium text-slate-400">Baseline State</span>
@@ -36,7 +36,7 @@ export function BlastRadiusGauge({ blastRadius, planARisk, planBRisk, selectedPl
           </p>
         </div>
 
-        {/* Direct Execution */}
+        {}
         <div className={`p-3.5 rounded-md border text-red-200 space-y-1.5 transition-all ${
           selectedPlanId === 'direct_plan_a' ? 'bg-red-950/30 border-red-500' : 'bg-[#0B0E14] border-red-950/60'
         }`}>
@@ -52,7 +52,7 @@ export function BlastRadiusGauge({ blastRadius, planARisk, planBRisk, selectedPl
           </p>
         </div>
 
-        {/* ShadowProof Rehearsed */}
+        {}
         <div className={`p-3.5 rounded-md border text-emerald-200 space-y-1.5 transition-all ${
           selectedPlanId === 'shadowproof_plan_b' ? 'bg-emerald-950/30 border-emerald-500' : 'bg-[#0B0E14] border-emerald-950/60'
         }`}>
@@ -69,7 +69,7 @@ export function BlastRadiusGauge({ blastRadius, planARisk, planBRisk, selectedPl
         </div>
       </div>
 
-      {/* Impact Radius Metrics */}
+      {}
       <div className="pt-2 border-t border-slate-800/80 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
         <div className="bg-[#0B0E14] p-2.5 rounded-md border border-slate-800">
           <span className="text-[10px] text-slate-400 block">Direct Nodes</span>

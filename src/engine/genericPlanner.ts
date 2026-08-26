@@ -18,7 +18,7 @@ export function generateGenericComparisonPlans(
   simResultA: SimulationResult;
   simResultB: SimulationResult;
 } {
-  // 1. Simulate Direct Plan A
+  
   const simA = simulatePlanAGeneric(initialState, targetNodeId);
 
   const targetNode = initialState.nodes.find(n => n.id === targetNodeId || n.name.toLowerCase().includes(targetNodeId.toLowerCase())) 
@@ -53,7 +53,6 @@ export function generateGenericComparisonPlans(
     executionTimeMs: 140
   };
 
-  // 2. Synthesize Candidate Plan B by searching for optimal remediations dynamically
   const shadowB = cloneState(initialState);
   const stepsB: ActionStep[] = [];
   const logsB: string[] = [];
@@ -63,7 +62,6 @@ export function generateGenericComparisonPlans(
 
   let stepIdx = 1;
 
-  // Search candidate users dynamically from graph state
   const candidateUsers = shadowB.nodes.filter(n => n.type === 'user' && n.status === 'active' && n.id !== targetNode.id);
   const candidateServiceAccounts = shadowB.nodes.filter(n => n.type === 'user' && (n.id.includes('svc') || n.id.includes('bot') || n.name.toLowerCase().includes('service') || n.name.toLowerCase().includes('automation')));
   const candidateReplicas = shadowB.nodes.filter(n => n.type === 'resource' && n.id !== targetNode.id && n.status === 'active');
@@ -72,7 +70,6 @@ export function generateGenericComparisonPlans(
   const defaultSvc: SystemNode = candidateServiceAccounts[0] || candidateUsers[1] || { id: 'user-svc-bot', name: 'Managed Service Principal', type: 'user', description: 'Managed service account principal', status: 'active', meta: {} };
   const defaultReplica: SystemNode = candidateReplicas[0] || { id: 'resource-failover', name: 'Failover Endpoint Pool', type: 'resource', description: 'Failover read replica endpoint pool', status: 'active', meta: {} };
 
-  // Address Broken Workflows
   simA.consequences.filter(c => c.category === 'workflow_stall').forEach(cons => {
     const wfNode = shadowB.nodes.find(n => n.id === cons.affectedNodeId);
     stepsB.push({
@@ -85,7 +82,6 @@ export function generateGenericComparisonPlans(
       status: 'completed'
     });
 
-    // Modify link in shadow graph
     const link = shadowB.links.find(l => l.target === cons.affectedNodeId && (l.source === targetNode.id || l.source.includes('user')));
     if (link) {
       link.source = defaultUser.id;
@@ -97,7 +93,6 @@ export function generateGenericComparisonPlans(
     logsB.push(`[STEP RE-ROUTED] Reassigned approval signatory link on '${cons.affectedNodeName}' to '${defaultUser.name}'. Workflow HEALTHY.`);
   });
 
-  // Address Orphaned Resources
   simA.consequences.filter(c => c.category === 'resource_orphan').forEach(cons => {
     const resNode = shadowB.nodes.find(n => n.id === cons.affectedNodeId);
     stepsB.push({
@@ -124,7 +119,6 @@ export function generateGenericComparisonPlans(
     logsB.push(`[STEP RE-ROUTED] Transferred KMS key policy and custody of '${cons.affectedNodeName}' to '${defaultUser.name}'. Resource HEALTHY.`);
   });
 
-  // Address Crashed Automations
   simA.consequences.filter(c => c.category === 'automation_crash').forEach(cons => {
     const autoNode = shadowB.nodes.find(n => n.id === cons.affectedNodeId);
     stepsB.push({
@@ -148,7 +142,6 @@ export function generateGenericComparisonPlans(
     logsB.push(`[STEP RE-ROUTED] Rotated bearer token authentication on '${cons.affectedNodeName}' to '${defaultSvc.name}'. Automation HEALTHY.`);
   });
 
-  // Address Governance Gaps
   simA.consequences.filter(c => c.category === 'security_gap').forEach(cons => {
     const roleNode = shadowB.nodes.find(n => n.id === cons.affectedNodeId);
     stepsB.push({
@@ -171,7 +164,6 @@ export function generateGenericComparisonPlans(
     logsB.push(`[STEP RE-ROUTED] Granted master role seat for '${cons.affectedNodeName}' to '${defaultUser.name}'. Role HEALTHY.`);
   });
 
-  // Address Downstream Endpoint Failures
   if (targetNode.type === 'resource') {
     shadowB.links.filter(l => l.source === targetNode.id).forEach(link => {
       link.source = defaultReplica.id;
@@ -182,7 +174,6 @@ export function generateGenericComparisonPlans(
     });
   }
 
-  // Final Step: Deprovision target node safely
   stepsB.push({
     id: `step-b-${stepIdx++}`,
     title: `Safely execute action on ${targetNode.name}`,
@@ -198,10 +189,8 @@ export function generateGenericComparisonPlans(
 
   logsB.push(`[STEP COMPLETED] Safely applied action to '${targetNode.name}'. All downstream dependencies re-routed!`);
 
-  // 3. Re-simulate Plan B shadow state dynamically through the symbolic engine
   const simB = simulatePlanAGeneric(shadowB, targetNode.id);
 
-  // If remediations successfully resolved cascades, simB risk score reflects isolated deprovisioning
   const planBRiskScore = simB.consequences.length === 0 
     ? (hasFailuresA ? Math.min(12, Math.max(4, simB.riskScore)) : simA.riskScore)
     : simB.riskScore;
@@ -227,7 +216,6 @@ export function generateGenericComparisonPlans(
     executionTimeMs: 420
   };
 
-  // 4. Dynamic Uncertainty Calibration derived from graph complexity & connectors
   const hasWebhooks = initialState.links.some(l => l.type === 'triggers' || l.description?.includes('Webhook'));
   const hasSessionTokens = initialState.nodes.some(n => n.type === 'user' || n.type === 'role');
   const hasKmsStorage = initialState.nodes.some(n => n.type === 'resource' && (n.name.includes('KMS') || n.name.includes('Vault') || n.name.includes('Database')));
@@ -278,4 +266,4 @@ export function generateGenericComparisonPlans(
     simResultB: simB
   };
 }
-
+

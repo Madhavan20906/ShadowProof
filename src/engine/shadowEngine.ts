@@ -12,7 +12,6 @@ function getTargetNodeIdFromState(initialState: SystemState, presetId: string): 
   );
   if (match) return match.id;
 
-  // Generic fallback based on node types in system state
   const defaultTarget = initialState.nodes.find(n => n.type === 'user' || n.type === 'resource') || initialState.nodes[0];
   return defaultTarget ? defaultTarget.id : 'user-alex';
 }
@@ -58,4 +57,4 @@ export function simulateSaferPlanB(
     actionSteps: planB.steps
   };
 }
-
+

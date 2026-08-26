@@ -16,7 +16,7 @@ export const ModeComparison: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Direct Execution Flow */}
+        {}
         <div className="bg-[#0B0E14] border border-red-950/60 rounded-md p-4">
           <div className="flex items-center justify-between mb-3">
             <span className="inline-flex items-center gap-1.5 text-xs font-medium text-red-400 bg-red-950/40 px-2.5 py-1 rounded border border-red-900/40">
@@ -49,7 +49,7 @@ export const ModeComparison: React.FC = () => {
           </div>
         </div>
 
-        {/* ShadowProof Rehearsed Flow */}
+        {}
         <div className="bg-[#0B0E14] border border-blue-950/60 rounded-md p-4">
           <div className="flex items-center justify-between mb-3">
             <span className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-400 bg-blue-950/40 px-2.5 py-1 rounded border border-blue-900/40">

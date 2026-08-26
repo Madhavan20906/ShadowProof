@@ -20,7 +20,7 @@ export const EvidenceMatrix: React.FC<EvidenceMatrixProps> = ({
 
   return (
     <div className="bg-[#131823] border border-slate-800 rounded-lg p-5 mb-6">
-      {/* Evidence Header */}
+      {}
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800/80">
         <div>
           <h3 className="text-sm font-semibold text-white">
@@ -32,9 +32,9 @@ export const EvidenceMatrix: React.FC<EvidenceMatrixProps> = ({
         </div>
       </div>
 
-      {/* Comparison Grid */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Plan A Card (Direct Execution) */}
+        {}
         <div 
           onClick={() => onSelectPlan('direct_plan_a')}
           className={`p-4 rounded-md border transition-all cursor-pointer relative ${
@@ -66,7 +66,7 @@ export const EvidenceMatrix: React.FC<EvidenceMatrixProps> = ({
             {planA.summary}
           </p>
 
-          {/* Metric Badges */}
+          {}
           <div className="grid grid-cols-2 gap-2 mb-3 text-xs font-mono">
             <div className={`p-2 rounded bg-slate-900 border border-slate-800 flex justify-between items-center ${planA.brokenWorkflowsCount > 0 ? 'text-red-400' : 'text-emerald-400'}`}>
               <span className="text-slate-400 text-[11px]">Broken Workflows:</span>
@@ -79,7 +79,7 @@ export const EvidenceMatrix: React.FC<EvidenceMatrixProps> = ({
             </div>
           </div>
 
-          {/* Plan A Step Sequence */}
+          {}
           <div className="space-y-1.5 text-xs">
             <span className="text-[10px] text-slate-400 font-medium block">Sequence Steps:</span>
             {planA.steps.map((step, idx) => (
@@ -95,7 +95,7 @@ export const EvidenceMatrix: React.FC<EvidenceMatrixProps> = ({
           </div>
         </div>
 
-        {/* Plan B Card (Rehearsed Plan) */}
+        {}
         <div 
           onClick={() => onSelectPlan('shadowproof_plan_b')}
           className={`p-4 rounded-md border transition-all cursor-pointer relative ${
@@ -125,7 +125,7 @@ export const EvidenceMatrix: React.FC<EvidenceMatrixProps> = ({
             {planB.summary}
           </p>
 
-          {/* Metric Badges */}
+          {}
           <div className="grid grid-cols-2 gap-2 mb-3 text-xs font-mono">
             <div className="p-2 rounded bg-slate-900 border border-slate-800 flex justify-between items-center text-emerald-400">
               <span className="text-slate-400 text-[11px]">Broken Workflows:</span>
@@ -138,7 +138,7 @@ export const EvidenceMatrix: React.FC<EvidenceMatrixProps> = ({
             </div>
           </div>
 
-          {/* Plan B Step Sequence */}
+          {}
           <div className="space-y-1.5 text-xs">
             <span className="text-[10px] text-slate-400 font-medium block">Re-routed Safety Sequence:</span>
             {planB.steps.map((step, idx) => (
