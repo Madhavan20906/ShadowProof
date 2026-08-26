@@ -1,93 +1,84 @@
 import React from 'react';
-import { AlertTriangle, ShieldCheck, ArrowRight, XCircle, CheckCircle2, Cpu, Zap, Lock } from 'lucide-react';
+import { ArrowRight, AlertTriangle, CheckCircle2, ShieldAlert, ShieldCheck } from 'lucide-react';
 
 export const ModeComparison: React.FC = () => {
   return (
-    <div className="glass-panel p-6 mb-6 border-purple-500/30 bg-gradient-to-br from-purple-950/20 via-slate-900/80 to-slate-950">
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+    <div className="bg-[#131823] border border-slate-800 rounded-lg p-5 mb-6">
+      <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800/80">
         <div>
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <Zap className="w-5 h-5 text-purple-400" />
-            Core Architectural Paradigm: Why Pre-Execution Rehearsal Matters
+          <h2 className="text-sm font-semibold text-white">
+            Architecture Comparison: Execution Models
           </h2>
-          <p className="text-xs text-slate-400">
-            Compare how traditional AI agents handle digital actions versus ShadowProof's safety rehearsal engine.
+          <p className="text-xs text-slate-400 mt-0.5">
+            How traditional agentic workflows compare to pre-execution safety rehearsal.
           </p>
         </div>
-        <span className="cyber-badge badge-purple">Paradigm Shift</span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Normal Automation Flow (Catastrophic) */}
-        <div className="glass-panel p-4 border-rose-500/30 bg-rose-950/10 hover:border-rose-500/50 transition-all">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Direct Execution Flow */}
+        <div className="bg-[#0B0E14] border border-red-950/60 rounded-md p-4">
           <div className="flex items-center justify-between mb-3">
-            <span className="cyber-badge badge-rose flex items-center gap-1">
-              <XCircle className="w-3.5 h-3.5" />
-              NORMAL AUTOMATION (UNSAFE)
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-red-400 bg-red-950/40 px-2.5 py-1 rounded border border-red-900/40">
+              <ShieldAlert className="w-3.5 h-3.5" />
+              Direct Execution (Default Agent Model)
             </span>
-            <span className="text-[11px] font-mono text-rose-400">Direct Execution Risk</span>
           </div>
 
-          <div className="space-y-2 font-mono text-xs">
-            <div className="p-2.5 rounded bg-slate-950/70 border border-slate-800 flex items-center justify-between text-slate-300">
-              <span>1. User Natural Request</span>
-              <ArrowRight className="w-3.5 h-3.5 text-slate-500" />
+          <div className="space-y-2 text-xs">
+            <div className="p-2.5 rounded bg-slate-900 border border-slate-800 flex items-center justify-between text-slate-300">
+              <span>1. User submits intent</span>
+              <ArrowRight className="w-3.5 h-3.5 text-slate-600" />
             </div>
 
-            <div className="p-2.5 rounded bg-rose-950/40 border border-rose-800/40 flex items-center justify-between text-rose-300">
-              <span className="font-semibold">2. AI Instantly Executes on Real API</span>
-              <ArrowRight className="w-3.5 h-3.5 text-rose-500" />
+            <div className="p-2.5 rounded bg-red-950/30 border border-red-900/30 flex items-center justify-between text-red-300">
+              <span className="font-medium">2. Agent invokes production APIs directly</span>
+              <ArrowRight className="w-3.5 h-3.5 text-red-500" />
             </div>
 
-            <div className="p-2.5 rounded bg-rose-950/60 border border-rose-800 flex items-center justify-between text-rose-200">
-              <span className="font-bold flex items-center gap-1.5">
-                <AlertTriangle className="w-4 h-4 text-rose-400" />
-                3. REAL SYSTEM MUTATED & BROKEN
+            <div className="p-2.5 rounded bg-red-950/50 border border-red-800/50 flex items-center justify-between text-red-200">
+              <span className="font-medium flex items-center gap-1.5">
+                <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
+                3. System state mutated with hidden dependency breaks
               </span>
-              <XCircle className="w-4 h-4 text-rose-400" />
             </div>
 
-            <div className="p-2.5 rounded bg-slate-900 border border-rose-900/50 text-[11px] text-slate-400">
-              💥 Consequences Discovered <strong className="text-rose-400">AFTER</strong> system breakage: Payroll bot crashes, $142k purchase orders stall, S3 KMS encryption keys orphaned.
+            <div className="p-2.5 rounded bg-slate-900/80 border border-slate-800 text-slate-400 text-[11px]">
+              Downstream impact discovered post-mutation: orphaned credentials, broken approval workflows, and failed cron sync tasks.
             </div>
           </div>
         </div>
 
-        {/* ShadowProof Engine Flow (Safe & Proven) */}
-        <div className="glass-panel p-4 border-cyan-500/40 bg-cyan-950/10 hover:border-cyan-500/60 transition-all glass-panel-glow">
+        {/* ShadowProof Rehearsed Flow */}
+        <div className="bg-[#0B0E14] border border-blue-950/60 rounded-md p-4">
           <div className="flex items-center justify-between mb-3">
-            <span className="cyber-badge badge-cyan flex items-center gap-1">
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-400 bg-blue-950/40 px-2.5 py-1 rounded border border-blue-900/40">
               <ShieldCheck className="w-3.5 h-3.5" />
-              SHADOWPROOF ENGINE (SAFE)
+              ShadowProof Safety Rehearsal
             </span>
-            <span className="text-[11px] font-mono text-cyan-400">Pre-Execution Rehearsal</span>
           </div>
 
-          <div className="space-y-2 font-mono text-xs">
-            <div className="p-2 rounded bg-slate-950/70 border border-slate-800 flex items-center justify-between text-slate-300">
-              <span>1. Intent → Parse Structured Plan</span>
-              <ArrowRight className="w-3.5 h-3.5 text-cyan-500" />
+          <div className="space-y-2 text-xs">
+            <div className="p-2.5 rounded bg-slate-900 border border-slate-800 flex items-center justify-between text-slate-300">
+              <span>1. Parse structured plan from intent</span>
+              <ArrowRight className="w-3.5 h-3.5 text-blue-500" />
             </div>
 
-            <div className="p-2 rounded bg-cyan-950/40 border border-cyan-800/40 flex items-center justify-between text-cyan-300">
-              <span className="font-semibold flex items-center gap-1">
-                <Cpu className="w-3.5 h-3.5 text-cyan-400" />
-                2. Rehearse in Shadow Sandbox Graph
+            <div className="p-2.5 rounded bg-blue-950/30 border border-blue-900/30 flex items-center justify-between text-blue-300">
+              <span className="font-medium">2. Rehearse plan in isolated dependency graph</span>
+              <ArrowRight className="w-3.5 h-3.5 text-blue-500" />
+            </div>
+
+            <div className="p-2.5 rounded bg-indigo-950/30 border border-indigo-900/30 flex items-center justify-between text-indigo-300">
+              <span>3. Detect invariants & synthesize non-destructive remediation</span>
+              <ArrowRight className="w-3.5 h-3.5 text-indigo-500" />
+            </div>
+
+            <div className="p-2.5 rounded bg-emerald-950/30 border border-emerald-900/30 flex items-center justify-between text-emerald-300">
+              <span className="font-medium flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                4. Human approval → Execute validated remediation plan
               </span>
-              <ArrowRight className="w-3.5 h-3.5 text-cyan-500" />
-            </div>
-
-            <div className="p-2 rounded bg-purple-950/40 border border-purple-800/40 flex items-center justify-between text-purple-300">
-              <span>3. Discover Failures → Synthesize Safer Plan B</span>
-              <ArrowRight className="w-3.5 h-3.5 text-purple-500" />
-            </div>
-
-            <div className="p-2 rounded bg-emerald-950/40 border border-emerald-800/40 flex items-center justify-between text-emerald-300">
-              <span className="font-bold flex items-center gap-1">
-                <Lock className="w-3.5 h-3.5 text-emerald-400" />
-                4. Human Approval → Apply & Verify
-              </span>
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
             </div>
           </div>
         </div>

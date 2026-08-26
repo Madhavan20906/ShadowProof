@@ -178,7 +178,7 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#07090E] text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-slate-950">
+    <div className="min-h-screen bg-[#0B0E14] text-slate-100 flex flex-col selection:bg-blue-600 selection:text-white">
       {/* Top Navbar */}
       <Header
         currentStep={appStage}
@@ -210,31 +210,31 @@ export function App() {
           {/* Left Column: Interactive Dependency Graph */}
           <div className="lg:col-span-7 flex flex-col space-y-3">
             {/* View Mode Toggle Bar */}
-            <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-800 font-mono text-xs">
-              <span className="text-slate-400 font-bold uppercase">Graph Topology View:</span>
+            <div className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-[#131823] border border-slate-800 text-xs">
+              <span className="text-slate-400 font-medium">Topology View:</span>
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => setActiveGraphMode('real')}
-                  className={`px-3 py-1 rounded-lg transition-all ${
-                    activeGraphMode === 'real' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+                  className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                    activeGraphMode === 'real' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  Real System State
+                  Live System State
                 </button>
                 {plans && (
                   <>
                     <button
                       onClick={() => setActiveGraphMode('direct_plan_a')}
-                      className={`px-3 py-1 rounded-lg transition-all ${
-                        activeGraphMode === 'direct_plan_a' ? 'bg-rose-500 text-white font-bold' : 'text-slate-400 hover:text-white'
+                      className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                        activeGraphMode === 'direct_plan_a' ? 'bg-red-950/60 text-red-400 border border-red-900/40' : 'text-slate-400 hover:text-white'
                       }`}
                     >
                       Plan A (Direct Failures)
                     </button>
                     <button
                       onClick={() => setActiveGraphMode('shadowproof_plan_b')}
-                      className={`px-3 py-1 rounded-lg transition-all ${
-                        activeGraphMode === 'shadowproof_plan_b' ? 'bg-purple-600 text-white font-bold' : 'text-slate-400 hover:text-white'
+                      className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                        activeGraphMode === 'shadowproof_plan_b' ? 'bg-blue-950/60 text-blue-400 border border-blue-900/40' : 'text-slate-400 hover:text-white'
                       }`}
                     >
                       Plan B (Re-routed Safe)
@@ -254,16 +254,16 @@ export function App() {
           {/* Right Column: Consequences & Rehearsal Output */}
           <div className="lg:col-span-5 flex flex-col space-y-4">
             {appStage === 'intent' && !plans && (
-              <div className="glass-panel p-6 h-full flex flex-col items-center justify-center text-center space-y-4 border-slate-800">
-                <div className="w-16 h-16 rounded-2xl bg-cyan-950/60 border border-cyan-500/30 flex items-center justify-center text-cyan-400 animate-pulse-glow">
-                  <Cpu className="w-8 h-8" />
+              <div className="bg-[#131823] border border-slate-800 rounded-lg p-6 h-full flex flex-col items-center justify-center text-center space-y-3">
+                <div className="w-12 h-12 rounded bg-blue-950/40 border border-blue-900/40 flex items-center justify-center text-blue-400">
+                  <Cpu className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white mb-1">
-                    GENERIC SHADOW REHEARSAL ENGINE READY
+                  <h3 className="text-sm font-semibold text-white mb-1">
+                    Safety Rehearsal Engine Ready
                   </h3>
-                  <p className="text-xs text-slate-400 max-w-sm font-sans leading-relaxed">
-                    Click <strong className="text-cyan-300">"RUN SHADOW REHEARSAL"</strong> above. The generic graph propagation engine will discover downstream failures & compute Plan B on the fly!
+                  <p className="text-xs text-slate-400 max-w-sm leading-relaxed">
+                    Click <strong className="text-slate-200">"Run Safety Rehearsal"</strong> to discover downstream graph failures & compute non-destructive Plan B sequences.
                   </p>
                 </div>
               </div>
@@ -278,12 +278,12 @@ export function App() {
                 />
 
                 {/* Primary Authorization CTA Bar */}
-                <div className="glass-panel p-4 border-emerald-500/40 bg-gradient-to-r from-emerald-950/30 via-slate-900 to-cyan-950/30 flex items-center justify-between">
+                <div className="bg-[#131823] border border-emerald-900/50 rounded-lg p-4 flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] text-emerald-400 font-mono font-bold uppercase block">
-                      Recommended Plan Selected
+                    <span className="text-[10px] text-emerald-400 font-medium uppercase block">
+                      Selected Plan
                     </span>
-                    <h4 className="text-xs font-bold text-white">
+                    <h4 className="text-xs font-semibold text-white">
                       {selectedPlanId === 'shadowproof_plan_b' ? 'Plan B (ShadowProof Rehearsed)' : 'Plan A (Direct Execution)'}
                     </h4>
                   </div>
@@ -291,11 +291,11 @@ export function App() {
                   {appStage === 'shadow_rehearsed' && (
                     <button
                       onClick={handleInitiateApproval}
-                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 font-bold text-xs uppercase tracking-wider flex items-center gap-2 hover:opacity-95 transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
+                      className="px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs flex items-center gap-2 transition-colors"
                     >
-                      <Lock className="w-4 h-4" />
+                      <Lock className="w-3.5 h-3.5" />
                       Proceed to Approval
-                      <ArrowRight className="w-4 h-4" />
+                      <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   )}
                 </div>

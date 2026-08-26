@@ -1,30 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 :root {
-  --bg-primary: #07090E;
-  --bg-secondary: #0D111A;
-  --bg-card: rgba(13, 17, 26, 0.85);
-  
-  --accent-cyan: #00F2FE;
-  --accent-purple: #8B5CF6;
-  --accent-emerald: #10B981;
-  --accent-amber: #F59E0B;
-  --accent-rose: #EF4444;
+  --bg-app: #0B0E14;
+  --bg-surface: #131823;
+  --bg-surface-hover: #19202E;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.15);
 }
 
 body {
-  background-color: #07090E;
-  color: #F8FAFC;
+  background-color: #0B0E14;
+  color: #F1F5F9;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
   line-height: 1.5;
-  background-image: 
-    radial-gradient(circle at 15% 15%, rgba(0, 242, 254, 0.04) 0%, transparent 45%),
-    radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.04) 0%, transparent 45%),
-    radial-gradient(circle at 50% 50%, rgba(239, 68, 68, 0.02) 0%, transparent 60%);
-  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Custom Scrollbars */
@@ -34,72 +26,113 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(13, 17, 26, 0.8);
+  background: #0B0E14;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 242, 254, 0.4);
+  background: rgba(255, 255, 255, 0.28);
 }
 
-/* Glass Panel Styling */
-.glass-panel {
-  background: rgba(13, 17, 26, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+/* Card & Surface Panels */
+.card-panel {
+  background: #131823;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.card-panel-interactive {
+  background: #131823;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card-panel-interactive:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: #161D2B;
+}
+
+/* Backward compatibility aliases mapping to clean non-glow panel styles */
+.glass-panel {
+  background: #131823;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
 }
 
 .glass-panel-glow {
-  border-color: rgba(0, 242, 254, 0.35);
-  box-shadow: 0 0 24px rgba(0, 242, 254, 0.12), 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+  border-color: rgba(59, 130, 246, 0.3);
 }
 
 .glass-panel-danger {
-  border-color: rgba(239, 68, 68, 0.4);
-  box-shadow: 0 0 24px rgba(239, 68, 68, 0.12), 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+  border-color: rgba(239, 68, 68, 0.3);
 }
 
 .glass-panel-success {
-  border-color: rgba(16, 185, 129, 0.4);
-  box-shadow: 0 0 24px rgba(16, 185, 129, 0.12), 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+  border-color: rgba(16, 185, 129, 0.3);
 }
 
-/* Pulse Keyframes */
-@keyframes pulseGlow {
-  0% { box-shadow: 0 0 0 0 rgba(0, 242, 254, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(0, 242, 254, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(0, 242, 254, 0); }
-}
-
-@keyframes pulseDanger {
-  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
-  70% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-}
-
-.animate-pulse-glow {
-  animation: pulseGlow 2s infinite;
-}
-
-.animate-pulse-danger {
-  animation: pulseDanger 1.5s infinite;
-}
-
-/* Cyber Badges */
-.cyber-badge {
-  font-family: 'JetBrains Mono', monospace;
+/* Standard UI Badges */
+.status-badge {
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.badge-blue {
+  background: rgba(59, 130, 246, 0.12);
+  color: #60A5FA;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.badge-emerald {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.badge-rose {
+  background: rgba(239, 68, 68, 0.12);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.badge-amber {
+  background: rgba(245, 158, 11, 0.12);
+  color: #FBBF24;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.badge-indigo {
+  background: rgba(99, 102, 241, 0.12);
+  color: #818CF8;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.badge-neutral {
+  background: rgba(255, 255, 255, 0.06);
+  color: #94A3B8;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Backward compatibility alias for cyber-badge */
+.cyber-badge {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
   padding: 2px 8px;
   border-radius: 4px;
   display: inline-flex;
@@ -108,31 +141,13 @@ body {
 }
 
 .badge-cyan {
-  background: rgba(0, 242, 254, 0.12);
-  color: #00F2FE;
-  border: 1px solid rgba(0, 242, 254, 0.3);
-}
-
-.badge-emerald {
-  background: rgba(16, 185, 129, 0.12);
-  color: #10B981;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.badge-rose {
-  background: rgba(239, 68, 68, 0.12);
-  color: #EF4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.badge-amber {
-  background: rgba(245, 158, 11, 0.12);
-  color: #F59E0B;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: rgba(59, 130, 246, 0.12);
+  color: #60A5FA;
+  border: 1px solid rgba(59, 130, 246, 0.25);
 }
 
 .badge-purple {
-  background: rgba(139, 92, 246, 0.12);
-  color: #8B5CF6;
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  background: rgba(99, 102, 241, 0.12);
+  color: #818CF8;
+  border: 1px solid rgba(99, 102, 241, 0.25);
 }

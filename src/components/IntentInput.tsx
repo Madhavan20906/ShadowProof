@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Play, Sparkles, UserMinus, ShieldAlert, Database, Terminal, ArrowRight } from 'lucide-react';
+import { Play, UserMinus, ShieldAlert, Database, Terminal, ArrowRight, Search } from 'lucide-react';
 import { PRESET_SCENARIOS } from '../mock/scenarioData';
 import { PresetScenario } from '../types/shadowproof';
 
@@ -37,55 +37,55 @@ export const IntentInput: React.FC<IntentInputProps> = ({
 
   const getIcon = (name: string) => {
     switch (name) {
-      case 'UserMinus': return <UserMinus className="w-5 h-5 text-amber-400" />;
-      case 'ShieldAlert': return <ShieldAlert className="w-5 h-5 text-rose-400" />;
-      case 'Database': return <Database className="w-5 h-5 text-purple-400" />;
-      default: return <Terminal className="w-5 h-5 text-cyan-400" />;
+      case 'UserMinus': return <UserMinus className="w-4 h-4 text-amber-400" />;
+      case 'ShieldAlert': return <ShieldAlert className="w-4 h-4 text-red-400" />;
+      case 'Database': return <Database className="w-4 h-4 text-indigo-400" />;
+      default: return <Terminal className="w-4 h-4 text-blue-400" />;
     }
   };
 
   return (
-    <div className="glass-panel p-6 mb-6 relative overflow-hidden border-cyan-500/20">
-      {/* Background Accent Gradient */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
-
-      {/* Header Label */}
+    <div className="bg-[#131823] border border-slate-800 rounded-lg p-5 mb-6">
+      {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-cyan-400 animate-pulse" />
-          <h2 className="text-base font-bold text-white tracking-wide">
-            STEP 1: DEFINE ADMINISTRATIVE INTENT
+        <div>
+          <h2 className="text-sm font-semibold text-white">
+            1. Define Execution Intent
           </h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Select a target workflow or specify custom natural language administrative instructions.
+          </p>
         </div>
-        <span className="cyber-badge badge-cyan">NATURAL LANGUAGE ENGINE</span>
       </div>
 
-      {/* Preset Scenario Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+      {/* Preset Scenario Selector */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         {PRESET_SCENARIOS.map((scenario) => {
           const isSelected = selectedPresetId === scenario.id;
           return (
             <button
               key={scenario.id}
               onClick={() => handleSelectPreset(scenario)}
-              className={`p-3.5 rounded-xl border text-left transition-all relative overflow-hidden group ${
+              className={`p-3 rounded-md border text-left transition-all relative ${
                 isSelected
-                  ? 'bg-slate-900/90 border-cyan-400 shadow-lg shadow-cyan-500/10'
-                  : 'bg-slate-900/40 border-slate-800 hover:border-slate-700 hover:bg-slate-900/60'
+                  ? 'bg-blue-950/20 border-blue-500/60 text-white'
+                  : 'bg-[#0B0E14] border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-900/60'
               }`}
             >
-              <div className="flex items-start justify-between mb-2">
-                <div className="p-2 rounded-lg bg-slate-800/80 border border-slate-700">
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="p-1.5 rounded bg-slate-900 border border-slate-800">
                   {getIcon(scenario.iconName)}
                 </div>
                 {isSelected && (
-                  <span className="cyber-badge badge-cyan text-[9px]">ACTIVE</span>
+                  <span className="text-[10px] font-medium text-blue-400 bg-blue-950/40 px-2 py-0.5 rounded border border-blue-900/40">
+                    Active Preset
+                  </span>
                 )}
               </div>
-              <h3 className="text-xs font-bold text-white mb-1 group-hover:text-cyan-300 transition-colors">
+              <h3 className="text-xs font-semibold text-white mb-1">
                 {scenario.title}
               </h3>
-              <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
+              <p className="text-[11px] text-slate-400 line-clamp-2 leading-snug">
                 {scenario.description}
               </p>
             </button>
@@ -94,40 +94,37 @@ export const IntentInput: React.FC<IntentInputProps> = ({
       </div>
 
       {/* Natural Language Prompt Input Bar */}
-      <form onSubmit={handleSubmit} className="relative flex items-center">
+      <form onSubmit={handleSubmit} className="flex items-center gap-3">
         <div className="relative flex-1">
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 text-cyan-400">
-            <Terminal className="w-5 h-5" />
-            <span className="font-mono text-xs text-slate-500">$</span>
-          </div>
+          <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={customText}
             onChange={(e) => setCustomText(e.target.value)}
-            placeholder="Type administrative intent... e.g. 'Remove Alex Morgan from Finance team'"
-            className="w-full bg-slate-950/90 border border-slate-700 rounded-xl pl-12 pr-4 py-3.5 text-sm text-white placeholder-slate-500 font-mono focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all shadow-inner"
+            placeholder="Specify intent e.g. 'Offboard Alex Morgan from Finance and re-assign signatory roles'"
+            className="w-full bg-[#0B0E14] border border-slate-700/80 rounded-md pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
           />
         </div>
 
         <button
           type="submit"
           disabled={isSimulating || !customText.trim()}
-          className={`ml-3 px-6 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center gap-2.5 transition-all shadow-lg ${
+          className={`px-4 py-2.5 rounded-md font-medium text-xs flex items-center gap-2 transition-colors whitespace-nowrap ${
             isSimulating
               ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
-              : 'bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 text-white hover:opacity-95 hover:shadow-cyan-500/25 active:scale-95'
+              : 'bg-blue-600 hover:bg-blue-500 text-white'
           }`}
         >
           {isSimulating ? (
             <>
-              <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
-              <span>REHEARSING...</span>
+              <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+              <span>Simulating...</span>
             </>
           ) : (
             <>
-              <Play className="w-4 h-4 text-cyan-200 fill-current" />
-              <span>RUN SHADOW REHEARSAL</span>
-              <ArrowRight className="w-4 h-4 text-white" />
+              <Play className="w-3.5 h-3.5 fill-current" />
+              <span>Run Safety Rehearsal</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </>
           )}
         </button>
