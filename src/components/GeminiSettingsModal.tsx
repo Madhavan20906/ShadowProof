@@ -108,7 +108,7 @@ export const GeminiSettingsModal: React.FC<GeminiSettingsModalProps> = ({ isOpen
         <div className="space-y-4 my-4 text-xs">
           <div>
             <label className="block text-xs text-slate-300 mb-1.5 font-medium">
-              Gemini API Key (Optional)
+              Gemini API Key
             </label>
             <div className="relative flex gap-2">
               <div className="relative flex-1">
