@@ -142,6 +142,13 @@ We believe technical transparency is essential for engineering rigor. Here is an
 * **Current Implementation**: Workflows execute in React session state with JSON snapshot import/export capabilities for reproducible scenarios.
 * **Production Roadmap**: Adding PostgreSQL / Redis state persistence with Webhook triggers for long-lived asynchronous approval workflows.
 
+### 6. Execution Environment & Connector Surface
+* **Current Implementation**: Pre-execution rehearsals run against synthetic shadow graph states. Controlled execution renders a synthetic sandbox terminal visualization to prevent unintentional real-world mutations during hackathon testing.
+* **Production Roadmap**: Developing live API connector plugins (Okta SCIM, AWS IAM, Terraform Cloud, Kubernetes API, PagerDuty) for real-world automated state mutation.
+
+### 7. Clean Repository Packaging
+* **Current Implementation**: Clean source repository with `.gitignore` excluding `node_modules`, `dist`, logs, environment files, and Vite temporary timestamp artifacts.
+
 ---
 
 ## 📄 License
