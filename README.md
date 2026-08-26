@@ -1,167 +1,154 @@
-# 🛡️ SHADOWPROOF
-> **"Don't let the real system be your testing environment."**
+# 🛡️ ShadowProof — Pre-Execution Safety Rehearsal Engine
 
-ShadowProof is a **pre-execution counterfactual simulation and action planning engine** designed to prevent catastrophic operational outages caused by routine IT administrative changes, employee offboarding, and cloud infrastructure modifications.
+[![Build Status](https://img.shields.io/badge/Build-Passing-emerald?style=for-the-badge&logo=vite)](https://github.com/Madhavan20906/ShadowProof)
+[![React](https://img.shields.io/badge/React-18.3-blue?style=for-the-badge&logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind-3.4-06B6D4?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
+[![Google Gemini](https://img.shields.io/badge/Google_Gemini-2.5_Flash-8E75B2?style=for-the-badge&logo=google)](https://ai.google.dev/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
----
+> **"Don't let your production environment be your testing ground."**
 
-## 🎯 The Problem
-
-When IT administrators execute operational commands—such as revoking an employee's SSO access, deprovisioning a contractor, or deleting a cloud resource—they often operate blind to hidden downstream dependencies:
-- **Stalled Approval Workflows**: Deleting an analyst freezes purchase order sign-offs exceeding $140,000 because they were the sole active signatory.
-- **Orphaned Encryption Vaults**: Deprovisioning a key custodian locks out KMS access policies on production S3 buckets.
-- **Crashed Automations**: Revoking personal access tokens (PATs) terminates scheduled background cron jobs with `HTTP 401 Unauthorized`.
-- **Dangling Endpoints**: Deleting a database read-replica breaks ETL data pipelines and executive reporting dashboards.
+**ShadowProof** is an enterprise-grade **pre-execution counterfactual rehearsal engine**. Before any destructive operational mutation (SSO offboarding, cloud resource deletion, database teardown, or API token revocation) touches a real system, ShadowProof clones the topology graph, simulates multi-hop failure cascades, evaluates compliance invariants, and synthesizes a non-destructive **Plan B (Rehearsed Execution)** alternative in real-time.
 
 ---
 
-## 💡 The Solution: Shadow Rehearsal Architecture
+## 💥 The Core Problem: Invisible Downstream Cascades
 
-ShadowProof introduces a **pre-execution rehearsal pipeline**. Before any mutation touches the real workspace, ShadowProof:
-1. **Clones the System State Graph** into an isolated shadow environment.
-2. **Executes Action Mutators** against the shadow copy, traversing multi-hop dependency links.
-3. **Evaluates Behavioral Invariants**:
-   - `INV-01`: Approval Workflow Signatory Requirement ($\ge 1$ active approver).
-   - `INV-02`: KMS Key Custody & Access Policy (Non-vacant owner).
-   - `INV-03`: Production Automation Authentication (Managed Service Principal required).
-   - `INV-04`: Master Governance Seat Redundancy.
-   - `INV-05`: Database Connection Pool Endpoint Verification.
-4. **Synthesizes a Safer Alternative (Plan B)**: Automatically searches for active domain leads, rotates bot PATs to service accounts, re-assigns sign-off authority, and re-routes connection endpoints.
-5. **Re-Simulates Remediated Plan B Snapshot**: Re-runs the full symbolic simulation engine (`simulatePlanAGeneric`) against the remediated graph snapshot (`shadowB`), computing residual risk scores, invariants, and consequences natively from state rather than static overrides.
-6. **Calculates Evidence-Backed Uncertainty & Blast Radius**: Provides side-by-side counterfactual metrics (Direct Plan A vs Rehearsed Plan B).
-7. **Requires Human Gatekeeper Approval**: Enforces authorization before executing the safer action plan inside a controlled sandbox environment.
+When SREs, IT Administrators, or Security Operations execute routine operational changes:
+- ❌ **Frozen Approval Chains**: Deprovisioning a finance analyst halts $140K+ purchase order approvals because they were the sole active signatory.
+- ❌ **Orphaned KMS Vaults**: Deleting a key custodian revokes access policies to production S3 KMS encryption keys.
+- ❌ **Crashed Data Automations**: Revoking personal access tokens (PATs) causes daily payroll sync bots to crash with `HTTP 401 Unauthorized`.
+- ❌ **Dangling Database Replicas**: Dropping a database replica breaks BI dashboards and downstream ETL pipelines.
 
 ---
 
-## 🏗️ Architecture Overview
+## ⚡ The Solution: Shadow Rehearsal Architecture
+
+ShadowProof intercepts operational intents and runs a **7-stage safety rehearsal pipeline**:
 
 ```mermaid
 flowchart TD
-    User([User / Operator Command]) --> IntentParser[Intent & Constraint Parser]
-    IntentParser -->|Parsed Target & Constraints| ShadowEngine[Generic Simulation Engine]
+    A[Operational Intent / Command Input] --> B[Gemini AI Intent & Constraint Parser]
+    B -->|Target Node & Rules| C[System Graph State Cloning]
     
-    subgraph Isolated Shadow Environment
-        RealState[(Real State Graph)] -. Clone .-> ShadowState[(Shadow State Clone)]
-        ShadowState --> Mutate[Direct Mutation Engine]
-        Mutate --> Cascade[Dependency Graph Traversal]
-        Cascade --> Invariants{Invariant Check Rules}
-        Invariants -->|Violations Found| PlanSearch[Goal-Preserving Candidate Search]
-        PlanSearch -->|Remediations Applied| ReSimulate[Plan B Re-Simulation]
+    subgraph Isolated Shadow Rehearsal Environment
+        C --> D[Plan A: Direct Mutation Engine]
+        D --> E[Multi-Hop Graph Cascade Traversal]
+        E --> F{Invariant Policy Evaluator}
+        
+        F -->|Violations Detected| G[Goal-Preserving State Search Engine]
+        G -->|Auto-Reroute & Transfer| H[Plan B: Rehearsed Execution Model]
     end
     
-    ReSimulate --> Evidence[Evidence & Counterfactual Comparison]
-    Evidence --> BlastRadius[Blast Radius & Risk Heatmap]
-    BlastRadius --> HumanGate{Human Authorization Gate}
-    HumanGate -->|Approved| ControlledExec[Controlled Sandbox Execution]
-    ControlledExec --> AuditLog[(Immutable Audit Log & Persistence)]
+    H --> I[Counterfactual Evidence Matrix & Risk Scoring]
+    I --> J[Human Approval & Governance Gate]
+    J -->|Approved| K[Controlled Sandbox Execution Console]
+    K --> L[Immutable Hash Audit Trail & JSON Verification]
 ```
 
 ---
 
-## 🤖 Transparent AI & Engine Disclosure
+## ✨ Key Features & Capabilities
 
-ShadowProof uses a **hybrid architecture** combining generative AI with deterministic graph safety models:
-
-- **AI-Assisted Components (Google Gemini 2.0 Flash / 1.5 Flash)**:
-  - Natural-language intent parsing & target node extraction.
-  - Natural-language operational constraint detection.
-  - Plain-language risk explanation generation.
-- **Deterministic System Engine**:
-  - Graph state cloning & link severing/re-routing.
-  - Multi-hop cascade propagation.
-  - System invariant verification (`INV-01` through `INV-05`).
-  - Evidence provenance & root-cause chain tracing.
-  - State snapshot hash calculation & TOCTOU verification.
+| Feature | Description |
+| :--- | :--- |
+| **Comparative Simulation Engine** | Dynamic computation of Risk Scores (0-100), blast radius depth, and breaking consequences for both **Plan A (Direct)** and **Plan B (Rehearsed)**. |
+| **Multi-Model Gemini AI Integration** | Google Gemini API integration (`gemini-2.5-flash` / `gemini-2.0-flash` / `gemini-1.5-flash`) with dynamic model discovery, cached model resolution, and zero-downtime offline deterministic fallback. |
+| **Policy Invariant Guardrails** | Enforces 5 strict system invariants (`INV-01` through `INV-05`) verifying approval signatories, KMS key custody, automation principal auth, master governance seats, and database connection pools. |
+| **Interactive Topology Visualizer** | Full SVG dependency graph visualization with node drag-and-drop, topological auto-layout, search/filtering, and interactive blast radius heatmaps. |
+| **Temporal Consequence Breakdown** | Detailed impact timeline forecasting downstream failures at `T+0s`, `T+5m`, `T+1h`, and `T+24h`. |
+| **Custom Scenario Importer/Exporter** | Built-in scenario manager supporting custom JSON snapshot import/export and active entity graph editing. |
+| **Controlled Sandbox Console** | Real-time synthetic terminal emulator demonstrating zero-outage execution with live log streaming. |
+| **Immutable Compliance Audit Trail** | SHA-256 snapshot hashing, digital approval signatures, verification checklists, and downloadable compliance audit logs. |
 
 ---
 
-## 🚀 Quickstart & Setup
+## 🛠️ Tech Stack & Architecture
+
+- **Frontend & UI**: React 18, TypeScript, TailwindCSS, Lucide Icons, Vite
+- **Graph & Topology Engine**: Custom graph traversal algorithms (`genericPlanner.ts`, `genericSimulationEngine.ts`)
+- **Generative AI Engine**: Google Gemini REST API with zero-overhead model caching and rate limit short-circuit protection
+- **Testing & Tooling**: Vitest, PostCSS, ESLint
+
+---
+
+## 🚀 Quickstart & Local Setup
 
 ### Prerequisites
-- Node.js (v18+)
-- npm or yarn
+- **Node.js**: v18.0.0 or higher
+- **npm** or **yarn**
 
-### Installation & Execution
+### Installation
 
 ```bash
-# Clone repository
+# 1. Clone repository
 git clone https://github.com/Madhavan20906/ShadowProof.git
-cd shadowproof
+cd ShadowProof
 
-# Install dependencies
+# 2. Install dependencies
 npm install
 
-# (Optional) Set Google Gemini API Key for live LLM parsing
-# If omitted, system seamlessly defaults to built-in deterministic graph parsing.
+# 3. (Optional) Configure Gemini API Key
+# If omitted, the engine automatically runs in deterministic offline mode!
 cp .env.example .env
-# Edit .env or set VITE_GEMINI_API_KEY="AIzaSy..."
+# Set VITE_GEMINI_API_KEY="your-google-gemini-api-key"
 
-# Run automated Vitest unit test suite
+# 4. Launch local development server
+npm run dev
+```
+
+Open your browser at `http://localhost:5173`.
+
+### Running Tests & Production Build
+
+```bash
+# Run unit tests
 npm test
 
-# Start local development server
-npm run dev
-
-# Production build bundle check
+# Build production bundle
 npm run build
 ```
 
 ---
 
-## 📸 Key Features & Demo Surfaces
+## 📁 Repository Structure
 
-1. **Preset & Custom Scenario Engine**: Seeded scenarios for Employee Offboarding, DevOps Access Revocation, Database Cluster Teardown, and Contractor Offboarding. Includes a full **JSON Snapshot Importer/Exporter** and interactive graph entity builder.
-2. **Side-by-Side Counterfactual Comparison**: Direct Plan A (High Risk, Breaking Failures) vs Rehearsed Plan B (0 Failures, Low Risk).
-3. **Monitored Surface Connectors**: Active surface indicators for Okta, AWS KMS, GCP KMS, Datadog, and PagerDuty integration interfaces.
-4. **Temporal Timeline Breakdown**: Cascading outage breakdown across `T+0s`, `T+5m`, `T+1h`, and `T+24h`.
-5. **Controlled Workspace Execution**: Honest terminal visualization showing execution in a controlled synthetic workspace sandbox.
-6. **Immutable Compliance Audit Trail**: Full event history with snapshot hashes, verification checklists, and JSON report export.
+```
+shadowproof/
+├── src/
+│   ├── components/            # React UI Components
+│   │   ├── AIRiskCard.tsx       # AI Risk Reasoning Card
+│   │   ├── DependencyGraph.tsx  # Interactive SVG Graph Visualizer
+│   │   ├── EvidenceMatrix.tsx   # Side-by-side Plan A vs Plan B Evidence Matrix
+│   │   ├── Header.tsx           # Global Header & Engine Status
+│   │   ├── IntentInput.tsx      # Natural Language Command Input
+│   │   ├── PolicyCheckPanel.tsx # Invariant Check Verification Panel
+│   │   └── ...
+│   ├── engine/                # Core Simulation & AI Engines
+│   │   ├── aiReasoningEngine.ts # Gemini LLM Safety Synthesis Engine
+│   │   ├── intentParser.ts      # Gemini Natural Language Intent Parser
+│   │   ├── genericPlanner.ts    # Comparative Plan Generator & State Search
+│   │   ├── genericSimulationEngine.ts # Multi-hop Graph Traversal & Invariants
+│   │   └── shadowEngine.ts      # Legacy Scenario Engine Wrappers
+│   ├── mock/                  # Preset Scenarios & Initial State Topology
+│   └── types/                 # TypeScript Interfaces & Systems Models
+├── dist/                      # Production Build Distribution
+├── vercel.json                # Vercel Deployment Configuration
+├── netlify.toml               # Netlify Deployment Configuration
+└── README.md                  # System Documentation
+```
 
 ---
 
-## 🛡️ Responsible Delivery & Security Controls
+## 🔒 Security & Privacy Controls
 
-- **Client-Side Key Management & Privacy**: Gemini API keys are stored strictly in browser memory / `localStorage` for local evaluation. API requests travel directly via HTTPS/TLS to official Google Gemini endpoints (`generativelanguage.googleapis.com`) with zero intermediate proxy server interception.
-- **100% Strict TypeScript Typing**: All natural-language inputs and simulation state transitions are bound to strictly typed JSON schemas with 0 `: any` type bypasses across the entire codebase.
-- **Action Schema Allowlisting**: Permitted action types are strictly limited to `deprovision`, `reassign_approver`, `transfer_ownership`, `rotate_credential`, and `update_permission`.
-- **TOCTOU Precondition Verification & Snapshot Hashing**: State snapshot hashes (`STATE-XXXXXXXXXXXX`) are computed using a deterministic 64-bit topology checksum over node/link graph states prior to execution to detect race conditions.
-- **Honest System Boundaries**: Clear visual labeling indicating **"SHADOW ENVIRONMENT — NO REAL CHANGES"** and **"CONTROLLED WORKSPACE EXECUTION (Synthetic Environment)"**.
-
----
-
-## 🔍 Architecture & System Design Disclosure
-
-We believe technical transparency is essential for engineering rigor. Here is an explicit breakdown of our system engine capabilities and production roadmap:
-
-### 1. Invariant Engine & Declarative Policy Rules
-* **Current Implementation**: The invariant engine (`genericSimulationEngine.ts`) evaluates a registry of 5 core system invariants (`INV-01` through `INV-05`) via declarative predicate checks (`evaluate: (state, consequences) => 'passed' | 'violated' | 'warning'`).
-* **Production Roadmap**: Transitioning to Open Policy Agent (OPA) / Rego policy rules evaluated dynamically from external YAML/Rego definitions.
-
-### 2. Intent Parsing & Natural Language Fallback
-* **Current Implementation**: When an API key is provided, Google Gemini (`gemini-2.0-flash` / `gemini-1.5-flash`) performs zero-shot entity extraction and structured JSON intent parsing. In deterministic offline mode, the fallback parser tokenizes and matches target nodes dynamically from active graph topology and selects transfer candidates from live active users without hardcoded names.
-* **Production Roadmap**: Integrating a local WebAssembly-based micro-LLM (Transformers.js / ONNX) for 100% offline semantic embedding matching.
-
-### 3. Computed Consequence & Risk Severity Model
-* **Current Implementation**: Risk severity and business impact are computed formulaically based on node metadata attributes (`monetaryValue`, active `connections` count, `queryRate`, `slaHours`, and graph link fanout depth) via `computeNodeRiskMetrics()`.
-* **Production Roadmap**: Deriving risk severity dynamically from real-time observability metrics (OpenTelemetry load, SLA breach penalties, active TCP connection counts).
-
-### 4. Multi-Scenario Family Support
-* **Current Implementation**: Proven across both **Identity & Access Offboarding** (e.g. Alex Morgan / Jordan Tech / Priya Shah) and **Cloud Database Infrastructure Teardown** (e.g. `db-prod-replica-02` deletion with failover re-routing to `db-prod-replica-03`).
-* **Production Roadmap**: Extending generic graph mutators to handle multi-region CI/CD failovers and network ACL mutations.
-
-### 5. Session State & Multi-Step Persistence
-* **Current Implementation**: Workflows execute in React session state with JSON snapshot import/export capabilities for reproducible scenarios.
-* **Production Roadmap**: Adding PostgreSQL / Redis state persistence with Webhook triggers for long-lived asynchronous approval workflows.
-
-### 6. Execution Environment & Connector Surface
-* **Current Implementation**: Surface connectors (`ENTERPRISE_CONNECTORS_REGISTRY`) define interfaces for Okta, AWS KMS, GCP KMS, Datadog, and PagerDuty. Controlled execution renders a synthetic sandbox terminal visualization to prevent unintentional real-world mutations during hackathon testing.
-* **Production Roadmap**: Developing live API connector plugins for real-world automated state mutation.
-
-### 7. Clean Repository Packaging
-* **Current Implementation**: Clean source repository with `.gitignore` excluding `node_modules`, `dist`, logs, environment files, and Vite temporary timestamp artifacts.
+- **Zero Middleware Key Storage**: Your Google Gemini API key is kept locally in browser `localStorage` / environment variables. It travels directly via HTTPS to Google's official endpoints (`generativelanguage.googleapis.com`).
+- **100% Type-Safe Contracts**: All graph state mutations, action plans, and LLM payloads are strictly bound to TypeScript types with zero `: any` type bypasses.
+- **TOCTOU Snapshot Hashing**: State snapshot topology hashes (`STATE-XXXXXXXX`) detect race conditions before controlled execution.
 
 ---
 
 ## 📄 License
-[MIT License](LICENSE). Built for the Hackathon Demonstration.
 
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
