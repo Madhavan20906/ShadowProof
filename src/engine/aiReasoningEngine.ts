@@ -42,8 +42,8 @@ export async function analyzeSimulationWithAI(
   }
 
   const cleanKey = apiKey.trim().replace(/^["']|["']$/g, '');
-  const EXCLUDED_PATTERNS = ['tts', 'embed', 'audio', 'imagen', 'realtime', 'bison', 'gecko', 'gemini-2.5-flash'];
-  const PREFERRED_MODELS = ['gemini-3.6-flash', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
+  const EXCLUDED_PATTERNS = ['tts', 'embed', 'audio', 'imagen', 'realtime', 'bison', 'gecko', 'veo'];
+  const PREFERRED_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.5-pro'];
   let candidateModels = PREFERRED_MODELS;
 
   try {
@@ -56,9 +56,9 @@ export async function analyzeSimulationWithAI(
         .filter((name: string) => !EXCLUDED_PATTERNS.some(p => name.toLowerCase().includes(p)));
 
       if (fetchedModels.length > 0) {
-        const flash36 = fetchedModels.filter(m => m.includes('3.6') || m.includes('flash'));
-        const otherModels = fetchedModels.filter(m => !m.includes('3.6') && !m.includes('flash'));
-        candidateModels = Array.from(new Set([...PREFERRED_MODELS, ...flash36, ...otherModels]));
+        const topModels = fetchedModels.filter(m => m.includes('2.5') || m.includes('2.0') || m.includes('flash'));
+        const otherModels = fetchedModels.filter(m => !topModels.includes(m));
+        candidateModels = Array.from(new Set([...topModels, ...PREFERRED_MODELS, ...otherModels]));
       }
     }
   } catch (e) {
