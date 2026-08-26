@@ -3,38 +3,52 @@ import { SystemState, ParsedIntent, SystemNode } from '../types/shadowproof';
 export function parseUserIntent(intentText: string, systemState: SystemState): ParsedIntent {
   const text = intentText.toLowerCase();
 
-  // 1. Detect Action Type
+  // 1. Detect Action Type dynamically across offboarding, infrastructure teardown, key rotation, and migration
   let action: 'deprovision' | 'delete' | 'revoke' = 'deprovision';
-  if (text.includes('delete') || text.includes('teardown') || text.includes('terminate') || text.includes('drop')) {
+  if (text.includes('delete') || text.includes('teardown') || text.includes('terminate') || text.includes('drop') || text.includes('destroy') || text.includes('remove cluster')) {
     action = 'delete';
-  } else if (text.includes('revoke') || text.includes('disable') || text.includes('strip')) {
+  } else if (text.includes('revoke') || text.includes('disable') || text.includes('strip') || text.includes('rotate')) {
     action = 'revoke';
   }
 
-  // 2. Find target node in systemState
+  // 2. Dynamically match target node from active system graph state
   let matchedNode: SystemNode | undefined = undefined;
 
+  // Search by exact node ID, full node name, or tokenized name matches
   for (const node of systemState.nodes) {
     const nodeNameLower = node.name.toLowerCase();
-    const firstName = nodeNameLower.split(' ')[0];
-    if (text.includes(nodeNameLower) || (firstName.length > 2 && text.includes(firstName)) || text.includes(node.id.toLowerCase())) {
+    const nameTokens = nodeNameLower.split(/[\s-_]+/);
+    
+    const isFullMatch = text.includes(nodeNameLower);
+    const isIdMatch = text.includes(node.id.toLowerCase());
+    const isTokenMatch = nameTokens.some(token => token.length > 2 && text.includes(token));
+
+    if (isFullMatch || isIdMatch || isTokenMatch) {
       matchedNode = node;
       break;
     }
   }
 
+  // Generic fallback if no specific token matched in string
   if (!matchedNode) {
     matchedNode = systemState.nodes.find(n => n.type === 'user' || n.type === 'resource') || systemState.nodes[0];
   }
 
-  // 3. Extract Natural Language Constraints
+  // 3. Extract Natural Language Operational Constraints dynamically
   const constraints: string[] = [];
-  if (text.includes('payroll') || text.includes('don\'t disrupt') || text.includes('without outage')) {
-    constraints.push('Preserve continuous execution of automated background jobs.');
+
+  // Check for continuous execution constraints
+  if (text.includes('payroll') || text.includes('don\'t disrupt') || text.includes('without outage') || text.includes('zero downtime') || text.includes('no downtime')) {
+    constraints.push('Preserve continuous execution of automated background jobs and connection pools.');
   }
-  if (text.includes('priya') || text.includes('elena') || text.includes('maya')) {
-    constraints.push('Prefer least-privilege transfer to domain lead.');
+
+  // Dynamically find active lead users in the graph to serve as transfer candidates
+  const activeLeadUsers = systemState.nodes.filter(n => n.type === 'user' && n.status === 'active' && n.id !== matchedNode?.id);
+  if (activeLeadUsers.length > 0) {
+    const leadNames = activeLeadUsers.slice(0, 2).map(u => u.name).join(' / ');
+    constraints.push(`Prefer least-privilege custody transfer to verified domain leads (${leadNames}).`);
   }
+
   if (constraints.length === 0) {
     constraints.push('Ensure 0 critical breaking failures on active workflows and encryption keys.');
   }
@@ -46,7 +60,7 @@ export function parseUserIntent(intentText: string, systemState: SystemState): P
     targetNodeType: matchedNode.type,
     constraints,
     rawIntent: intentText,
-    aiExplanation: `Extracted intent target '${matchedNode.name}' (${matchedNode.type.toUpperCase()}) with ${constraints.length} operational constraint(s).`,
+    aiExplanation: `Parsed target entity '${matchedNode.name}' (${matchedNode.type.toUpperCase()}) with ${constraints.length} active graph safety constraint(s).`,
     parsedByLLM: false
   };
 }

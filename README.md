@@ -118,5 +118,31 @@ npm run dev
 
 ---
 
+## 🔍 Known Architectural Trade-offs & Production Roadmap
+
+We believe technical transparency is essential for engineering rigor. In the context of a hackathon timeframe, ShadowProof prioritizes deterministic safety and high-fidelity rehearsal visualization. Here is an honest breakdown of our current system boundaries and production roadmap:
+
+### 1. Invariant Engine & Declarative Policy Rules
+* **Current Prototype State**: The invariant engine (`genericSimulationEngine.ts`) evaluates a registry of 5 core system invariants (`INV-01` through `INV-05`). While structured as declarative predicate checks against node types and status properties (`evaluate: (state) => boolean`), adding custom third-party invariants currently requires defining a new predicate function in code.
+* **Production Roadmap**: Transitioning to an Open Policy Agent (OPA) / Rego declarative policy evaluation engine allowing operators to write arbitrary policy constraints in YAML/Rego without modifying TypeScript source.
+
+### 2. Intent Parsing & Natural Language Fallback
+* **Current Prototype State**: When an API key is provided, Groq's `llama-3.3-70b-versatile` performs structured zero-shot entity extraction. In deterministic offline mode, the fallback parser extracts node tokens dynamically from active graph topology and selects transfer candidates from live active users.
+* **Production Roadmap**: Integrating a local WebAssembly-based micro-LLM (e.g. Transformers.js / ONNX) for 100% offline semantic embedding matching.
+
+### 3. Consequence & Risk Score Computation
+* **Current Prototype State**: Consequence alerts combine dynamic graph metadata (e.g., node monetary values, team ownership, schedule intervals) with pre-formatted risk templates.
+* **Production Roadmap**: Deriving risk severity dynamically from real-time observability metrics (OpenTelemetry load, SLA breach penalties, active TCP connection counts).
+
+### 4. Scenario Action Type Generalization
+* **Current Prototype State**: Tested primarily against identity offboarding, credentials revocation, and cloud resource cluster teardown.
+* **Production Roadmap**: Extending generic graph mutators to handle complex CI/CD deployment pipelines, network ACL mutations, and multi-region failovers.
+
+### 5. Session State & Multi-Step Persistence
+* **Current Prototype State**: Workflows execute in React session state with JSON snapshot import/export capabilities for reproducible scenarios.
+* **Production Roadmap**: Adding PostgreSQL / Redis state persistence with Webhook triggers for long-lived asynchronous approval workflows.
+
+---
+
 ## 📄 License
 MIT License. Built for the Hackathon Demonstration.

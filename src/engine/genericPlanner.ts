@@ -3,7 +3,8 @@ import {
   ActionPlan, 
   ActionStep, 
   UncertaintyMetric, 
-  SimulationResult 
+  SimulationResult,
+  SystemNode
 } from '../types/shadowproof';
 import { cloneState, simulatePlanAGeneric } from './genericSimulationEngine';
 
@@ -48,7 +49,7 @@ export function generateGenericComparisonPlans(
     executionTimeMs: 140
   };
 
-  // 2. Synthesize Candidate Plan B by searching for optimal remediations
+  // 2. Synthesize Candidate Plan B by searching for optimal remediations dynamically
   const shadowB = cloneState(initialState);
   const stepsB: ActionStep[] = [];
   const logsB: string[] = [];
@@ -58,14 +59,14 @@ export function generateGenericComparisonPlans(
 
   let stepIdx = 1;
 
-  // Search candidate users for reassignments
+  // Search candidate users dynamically from graph state
   const candidateUsers = shadowB.nodes.filter(n => n.type === 'user' && n.status === 'active' && n.id !== targetNode.id);
-  const candidateServiceAccounts = shadowB.nodes.filter(n => n.type === 'user' && (n.id.includes('svc') || n.id.includes('bot') || n.name.includes('Service')));
+  const candidateServiceAccounts = shadowB.nodes.filter(n => n.type === 'user' && (n.id.includes('svc') || n.id.includes('bot') || n.name.toLowerCase().includes('service') || n.name.toLowerCase().includes('automation')));
   const candidateReplicas = shadowB.nodes.filter(n => n.type === 'resource' && n.id !== targetNode.id && n.status === 'active');
 
-  const defaultUser = candidateUsers.find(u => u.name.includes('Elena')) || candidateUsers[0] || { id: 'user-elena', name: 'Elena Rostova' };
-  const defaultSvc = candidateServiceAccounts[0] || { id: 'user-svc-payroll', name: 'svc_payroll_automation' };
-  const defaultReplica = candidateReplicas[0] || { id: 'resource-db-replica-3', name: 'db-prod-replica-03' };
+  const defaultUser: SystemNode = candidateUsers[0] || { id: 'user-lead', name: 'Designated Backup Lead', type: 'user', status: 'active', meta: {} };
+  const defaultSvc: SystemNode = candidateServiceAccounts[0] || candidateUsers[1] || { id: 'user-svc-bot', name: 'Managed Service Principal', type: 'user', status: 'active', meta: {} };
+  const defaultReplica: SystemNode = candidateReplicas[0] || { id: 'resource-failover', name: 'Failover Endpoint Pool', type: 'resource', status: 'active', meta: {} };
 
   // Address Broken Workflows
   simA.consequences.filter(c => c.category === 'workflow_stall').forEach(cons => {
@@ -180,18 +181,18 @@ export function generateGenericComparisonPlans(
   // Final Step: Deprovision target node safely
   stepsB.push({
     id: `step-b-${stepIdx++}`,
-    title: `Deprovision ${targetNode.name} safely`,
+    title: `Safely execute action on ${targetNode.name}`,
     type: 'deprovision',
     targetId: targetNode.id,
     targetName: targetNode.name,
-    details: `Revoke directory account, SSO session tokens, and team memberships.`,
+    details: `Revoke directory account, session tokens, and target permissions.`,
     status: 'completed'
   });
 
   const nodeB = shadowB.nodes.find(n => n.id === targetNode.id);
   if (nodeB) nodeB.status = 'deprovisioned';
 
-  logsB.push(`[STEP COMPLETED] Safely deprovisioned '${targetNode.name}'. All downstream dependencies re-routed!`);
+  logsB.push(`[STEP COMPLETED] Safely applied action to '${targetNode.name}'. All downstream dependencies re-routed!`);
 
   // Simulate Plan B shadow state
   const simB = simulatePlanAGeneric(shadowB, targetNode.id);
@@ -206,7 +207,7 @@ export function generateGenericComparisonPlans(
     id: 'shadowproof_plan_b',
     name: 'ShadowProof Rehearsed Plan B (Recommended Safer Path)',
     type: 'shadowproof_plan_b',
-    summary: `Pre-execution re-routes approval sign-offs, transfers encryption custody, rotates bot credentials to service principals, and then safely offboards ${targetNode.name}.`,
+    summary: `Pre-execution re-routes approval sign-offs, transfers encryption custody, rotates bot credentials to service principals, and then safely executes action on ${targetNode.name}.`,
     steps: stepsB,
     riskScore: 4,
     brokenWorkflowsCount: 0,
