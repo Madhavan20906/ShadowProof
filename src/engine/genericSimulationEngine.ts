@@ -25,7 +25,7 @@ export function generateSnapshotHash(state: SystemState): string {
 }
 
 /**
- * Declarative Graph Invariant Definition Interface
+ * Declarative Graph Invariant Interface
  */
 export interface DeclarativeInvariant {
   code: string;
@@ -36,7 +36,7 @@ export interface DeclarativeInvariant {
 }
 
 /**
- * Registry of Declarative System Graph Invariants
+ * System Invariant Registry
  */
 export const SYSTEM_INVARIANTS_REGISTRY: DeclarativeInvariant[] = [
   {
@@ -72,9 +72,43 @@ export const SYSTEM_INVARIANTS_REGISTRY: DeclarativeInvariant[] = [
     name: 'Infrastructure Connection Pool Zero-Active State',
     description: 'Database or server nodes cannot be terminated while active connection pools reference host endpoints.',
     remediation: 'Re-target downstream connection pools to failover replica prior to teardown.',
-    evaluate: (state, consequences) => state.nodes.some(n => n.type === 'resource' && n.status === 'deprovisioned' && consequences.length > 0) ? 'violated' : 'passed'
+    evaluate: (state, consequences) => state.nodes.some(n => (n.type === 'resource' || n.type === 'automation') && n.status === 'failed' && consequences.some(c => c.category === 'workflow_stall' || c.category === 'automation_crash')) ? 'violated' : 'passed'
   }
 ];
+
+/**
+ * Formulaic Computed Risk & Severity Metric Derivation Engine
+ */
+function computeNodeRiskMetrics(node: SystemNode, connectedLinksCount: number) {
+  const monetary = node.meta?.monetaryValue || null;
+  const connections = node.meta?.connections || null;
+  const queryRate = node.meta?.queryRate || null;
+  const schedule = node.meta?.schedule || null;
+  const sla = node.meta?.slaHours || null;
+
+  // Base criticality score calculation
+  let criticalityWeight = 10;
+  if (monetary) criticalityWeight += 35;
+  if (connections) criticalityWeight += 30;
+  if (queryRate) criticalityWeight += 25;
+  if (sla) criticalityWeight += 20;
+  criticalityWeight += (connectedLinksCount * 8);
+
+  const severity: 'critical' | 'high' | 'medium' | 'low' = 
+    criticalityWeight >= 45 ? 'critical' :
+    criticalityWeight >= 30 ? 'high' :
+    criticalityWeight >= 15 ? 'medium' : 'low';
+
+  return {
+    criticalityWeight,
+    severity,
+    monetary,
+    connections,
+    queryRate,
+    schedule,
+    sla
+  };
+}
 
 export function simulatePlanAGeneric(
   initialState: SystemState,
@@ -121,62 +155,73 @@ export function simulatePlanAGeneric(
     if (l.target === targetNode.id) directImpactedIds.add(l.source);
   });
 
-  // Evaluate Rule 1: Approval Workflows
+  // Rule 1: Approval Workflows (Identity or Infra mutation)
   shadow.nodes.filter(n => n.type === 'workflow').forEach(workflow => {
-    const approverLinks = shadow.links.filter(l => l.target === workflow.id && l.type === 'approves' && l.status !== 'severed');
+    const approverLinks = shadow.links.filter(l => l.target === workflow.id && (l.type === 'approves' || l.type === 'requires') && l.status !== 'severed');
     const activeApprovers = approverLinks.map(l => shadow.nodes.find(n => n.id === l.source)).filter(n => n && n.status === 'active');
 
     if (activeApprovers.length === 0) {
       workflow.status = 'failed';
       indirectImpactedIds.add(workflow.id);
       
-      const monetaryVal = workflow.meta.monetaryValue || '$100,000+';
+      const linksCount = shadow.links.filter(l => l.target === workflow.id || l.source === workflow.id).length;
+      const metrics = computeNodeRiskMetrics(workflow, linksCount);
+
+      const impactDetail = metrics.monetary 
+        ? `Pending financial transactions totaling ${metrics.monetary} frozen; SLA limit ${metrics.sla ? metrics.sla + 'h' : '24h'}.`
+        : metrics.queryRate 
+        ? `Real-time reporting endpoint stalled at ${metrics.queryRate} throughput.`
+        : `Execution pipeline halted with 0 active signatories/hosts available.`;
+
       consequences.push({
         id: `cons-wf-${workflow.id}`,
-        severity: 'critical',
+        severity: metrics.severity,
         category: 'workflow_stall',
         title: `Workflow Stalled: ${workflow.name}`,
-        description: `Deprovisioning '${targetNode.name}' leaves '${workflow.name}' with 0 active approvers.`,
+        description: `Action on '${targetNode.name}' leaves '${workflow.name}' without active dependency nodes.`,
         affectedNodeId: workflow.id,
         affectedNodeName: workflow.name,
-        rootCauseChain: [targetNode.name, 'Sole Active Signatory', workflow.name],
-        businessImpact: `Pending approvals frozen totaling ${monetaryVal}; operational process stalled without active sign-off.`,
-        technicalRisk: `Workflow engine throws UnhandledApproverException on next execution attempt for node ${workflow.id}.`
+        rootCauseChain: [targetNode.name, 'Primary Dependency Node', workflow.name],
+        businessImpact: impactDetail,
+        technicalRisk: `Node '${workflow.id}' transitions to FAILED state; graph depth fanout: ${linksCount} link(s).`
       });
 
-      logs.push(`[CASCADE FAILURE] Workflow '${workflow.name}' marked FAILED (0 active approvers remaining).`);
+      logs.push(`[CASCADE FAILURE] Workflow '${workflow.name}' marked FAILED (Derived Severity: ${metrics.severity.toUpperCase()}).`);
     }
   });
 
-  // Evaluate Rule 2: Resource Custody & KMS Ownership
-  shadow.nodes.filter(n => n.type === 'resource').forEach(resource => {
+  // Rule 2: Resource Custody & Access Ownership
+  shadow.nodes.filter(n => n.type === 'resource' && n.id !== targetNode.id).forEach(resource => {
     const ownerLinks = shadow.links.filter(l => l.target === resource.id && l.type === 'owns' && l.status !== 'severed');
     const activeOwners = ownerLinks.map(l => shadow.nodes.find(n => n.id === l.source)).filter(n => n && n.status === 'active');
     
-    const isTargetOwner = resource.meta.owner === targetNode.name || ownerLinks.some(l => l.source === targetNode.id);
+    const isTargetOwner = resource.meta?.owner === targetNode.name || ownerLinks.some(l => l.source === targetNode.id);
 
     if (isTargetOwner && activeOwners.length === 0) {
       resource.status = 'orphaned';
       indirectImpactedIds.add(resource.id);
 
+      const linksCount = shadow.links.filter(l => l.target === resource.id || l.source === resource.id).length;
+      const metrics = computeNodeRiskMetrics(resource, linksCount);
+
       consequences.push({
         id: `cons-res-${resource.id}`,
-        severity: 'critical',
+        severity: metrics.severity,
         category: 'resource_orphan',
         title: `Resource Custody Lost: ${resource.name}`,
-        description: `Primary custodian '${targetNode.name}' deprovisioned without access policy rotation.`,
+        description: `Primary custodian '${targetNode.name}' modified/deprovisioned without policy transfer.`,
         affectedNodeId: resource.id,
         affectedNodeName: resource.name,
-        rootCauseChain: [targetNode.name, 'Primary KMS Key Custodian', resource.name],
-        businessImpact: `Access to encrypted resource vault ${resource.name} is locked out. Triggers SOC2 compliance audit violation.`,
+        rootCauseChain: [targetNode.name, 'Primary Key Custodian / Host', resource.name],
+        businessImpact: `Resource vault ${resource.name} (${resource.meta?.storageGb || 'N/A'} GB) is locked out. Triggers compliance audit violation.`,
         technicalRisk: `Key policy references revoked principal '${targetNode.id}', resulting in HTTP 403 AccessDenied errors.`
       });
 
-      logs.push(`[CASCADE FAILURE] Resource '${resource.name}' marked ORPHANED (Owner deprovisioned).`);
+      logs.push(`[CASCADE FAILURE] Resource '${resource.name}' marked ORPHANED (Derived Severity: ${metrics.severity.toUpperCase()}).`);
     }
   });
 
-  // Evaluate Rule 3: Personal Credentials & Automation Crashes
+  // Rule 3: Credentials & Automations
   shadow.nodes.filter(n => n.type === 'credential').forEach(cred => {
     const isTargetCred = cred.id.includes(targetNode.id) || 
                          cred.name.toLowerCase().includes(targetNode.name.toLowerCase().split(' ')[0]) ||
@@ -186,7 +231,6 @@ export function simulatePlanAGeneric(
       cred.status = 'failed';
       indirectImpactedIds.add(cred.id);
 
-      // Find automations depending on this credential
       const depLinks = shadow.links.filter(l => l.source === cred.id);
       depLinks.forEach(l => {
         l.status = 'severed';
@@ -195,27 +239,29 @@ export function simulatePlanAGeneric(
           automation.status = 'failed';
           indirectImpactedIds.add(automation.id);
 
-          const scheduleStr = automation.meta.schedule || 'scheduled execution';
+          const linksCount = shadow.links.filter(l => l.target === automation.id || l.source === automation.id).length;
+          const metrics = computeNodeRiskMetrics(automation, linksCount);
+
           consequences.push({
             id: `cons-auto-${automation.id}`,
-            severity: 'critical',
+            severity: metrics.severity,
             category: 'automation_crash',
             title: `Automation Crash: ${automation.name}`,
-            description: `Scheduled worker relies on personal token '${cred.name}' owned by '${targetNode.name}'.`,
+            description: `Worker relies on access credential '${cred.name}' attached to '${targetNode.name}'.`,
             affectedNodeId: automation.id,
             affectedNodeName: automation.name,
             rootCauseChain: [targetNode.name, cred.name, automation.name],
-            businessImpact: `Automated worker execution (${scheduleStr}) will crash, causing data sync pipeline freeze.`,
-            technicalRisk: `Worker process terminates with HTTP 401 Unauthorized bearer token error on ${automation.id}.`
+            businessImpact: `Scheduled execution (${metrics.schedule || 'automated trigger'}) crashes on auth handshake.`,
+            technicalRisk: `Process terminates with HTTP 401 Unauthorized API error on node ${automation.id}.`
           });
 
-          logs.push(`[CASCADE FAILURE] Automation '${automation.name}' marked FAILED (Bearer token revoked).`);
+          logs.push(`[CASCADE FAILURE] Automation '${automation.name}' marked FAILED (Derived Severity: ${metrics.severity.toUpperCase()}).`);
         }
       });
     }
   });
 
-  // Evaluate Rule 4: Governance Role Vacancy
+  // Rule 4: Governance Role Vacancy
   shadow.nodes.filter(n => n.type === 'role').forEach(role => {
     const roleLinks = shadow.links.filter(l => l.target === role.id && l.status !== 'severed');
     const activeHolders = roleLinks.map(l => shadow.nodes.find(n => n.id === l.source)).filter(n => n && n.status === 'active');
@@ -224,24 +270,27 @@ export function simulatePlanAGeneric(
       role.status = 'degraded';
       indirectImpactedIds.add(role.id);
 
+      const linksCount = shadow.links.filter(l => l.target === role.id || l.source === role.id).length;
+      const metrics = computeNodeRiskMetrics(role, linksCount);
+
       consequences.push({
         id: `cons-role-${role.id}`,
         severity: 'medium',
         category: 'security_gap',
         title: `Governance Void: ${role.name}`,
-        description: `'${targetNode.name}' held the sole active seat for role '${role.name}'.`,
+        description: `'${targetNode.name}' held the active seat for role '${role.name}'.`,
         affectedNodeId: role.id,
         affectedNodeName: role.name,
         rootCauseChain: [targetNode.name, 'Sole Seat Holder', role.name],
-        businessImpact: 'No backup administrator can modify access control settings or perform emergency overrides.',
-        technicalRisk: 'Role governance state defaults to read-only lock state until administrative re-assignment.'
+        businessImpact: 'No backup administrator can modify access settings or perform emergency overrides.',
+        technicalRisk: 'Governance state defaults to read-only lock state until administrative re-assignment.'
       });
 
-      logs.push(`[DEGRADED STATE] Role '${role.name}' marked DEGRADED (No backup role holder).`);
+      logs.push(`[DEGRADED STATE] Role '${role.name}' marked DEGRADED.`);
     }
   });
 
-  // Evaluate Rule 5: Multi-Hop Feeds & Replicates (Infrastructure / Database Teardown)
+  // Rule 5: Multi-Hop Feeds & Replicates (Database / Infrastructure Teardown)
   if (targetNode.type === 'resource') {
     shadow.links.filter(l => l.source === targetNode.id).forEach(link => {
       const downstream = shadow.nodes.find(n => n.id === link.target);
@@ -250,19 +299,22 @@ export function simulatePlanAGeneric(
         indirectImpactedIds.add(downstream.id);
 
         if (!consequences.some(c => c.affectedNodeId === downstream.id)) {
+          const linksCount = shadow.links.filter(l => l.target === downstream.id || l.source === downstream.id).length;
+          const metrics = computeNodeRiskMetrics(downstream, linksCount);
+
           consequences.push({
             id: `cons-downstream-${downstream.id}`,
-            severity: 'critical',
+            severity: metrics.severity,
             category: downstream.type === 'automation' ? 'automation_crash' : 'workflow_stall',
             title: `Downstream Endpoint Failure: ${downstream.name}`,
-            description: `'${downstream.name}' attempts active connection to deleted resource endpoint '${targetNode.name}'.`,
+            description: `'${downstream.name}' attempts active connection to deleted endpoint '${targetNode.name}'.`,
             affectedNodeId: downstream.id,
             affectedNodeName: downstream.name,
             rootCauseChain: [targetNode.name, link.description || 'Active Connection Endpoint', downstream.name],
-            businessImpact: `Dependent service '${downstream.name}' fails to fetch records or timeouts on connection attempts.`,
-            technicalRisk: `JDBC / TCP connection pool exhausts retries with ECONNREFUSED error targeting ${targetNode.name}.`
+            businessImpact: `Dependent endpoint '${downstream.name}' (${targetNode.meta?.connections || 'active pool'}) fails to establish connection.`,
+            technicalRisk: `TCP connection pool exhausts retries with ECONNREFUSED error targeting host ${targetNode.name}.`
           });
-          logs.push(`[CASCADE FAILURE] Downstream node '${downstream.name}' marked FAILED.`);
+          logs.push(`[CASCADE FAILURE] Downstream node '${downstream.name}' marked FAILED (Derived Severity: ${metrics.severity.toUpperCase()}).`);
         }
       }
     });
@@ -284,18 +336,18 @@ export function simulatePlanAGeneric(
   // 4. Temporal Timeline Breakdown
   temporalConsequences.push({
     timeframe: 'T+0s (Immediate)',
-    title: `Directory & IAM Revocation for ${targetNode.name}`,
-    description: `SSO tokens disabled; immediate revocation of active IAM session policies.`,
+    title: `Directory & API Session Revocation for ${targetNode.name}`,
+    description: `Endpoint session tokens disabled; immediate revocation of active IAM & connection policies.`,
     severity: 'low',
     affectedNodeName: targetNode.name
   });
 
   temporalConsequences.push({
     timeframe: 'T+5m (Session TTL)',
-    title: 'Active Session Cookie & JWT Expiration',
-    description: 'Active browser sessions expire; admin seat reverts to read-only fallback mode.',
+    title: 'Active Connection Pool & Session Expiration',
+    description: 'Active TCP connection pools expire; endpoints revert to read-only fallback mode.',
     severity: 'medium',
-    affectedNodeName: 'SSO Directory'
+    affectedNodeName: 'Connection Pool'
   });
 
   if (consequences.some(c => c.category === 'automation_crash')) {
@@ -312,7 +364,7 @@ export function simulatePlanAGeneric(
   if (consequences.some(c => c.category === 'workflow_stall' || c.category === 'resource_orphan')) {
     temporalConsequences.push({
       timeframe: 'T+24h (Batch ETL)',
-      title: 'Nightly Reporting & Compliance Batch Freeze',
+      title: 'Nightly Reporting & Data Warehouse Batch Freeze',
       description: 'Batch data pipelines fail to update warehouse records; compliance audit flag triggered.',
       severity: 'critical',
       affectedNodeName: 'Enterprise Data Warehouse'
@@ -326,12 +378,15 @@ export function simulatePlanAGeneric(
     indirectNodesCount: indirectImpactedIds.size,
     criticalFailuresCount: criticalCount,
     externalDependenciesCount: shadow.links.filter(l => l.status === 'severed').length,
-    impactedDepartments: Array.from(new Set(shadow.nodes.map(n => n.meta.team || 'Infrastructure').filter(Boolean)))
+    impactedDepartments: Array.from(new Set(shadow.nodes.map(n => n.meta?.team || 'Infrastructure').filter(Boolean)))
   };
 
-  // 6. Dynamic Risk Score Calculation
-  const rawRisk = (criticalCount * 30) + (consequences.filter(c => c.severity === 'high').length * 15) + (severedLinksCount * 5);
-  const riskScore = Math.min(98, Math.max(75, rawRisk > 0 ? rawRisk + 40 : 15));
+  // 6. Formulaic Risk Score Calculation
+  const severitySum = consequences.reduce((acc, c) => {
+    return acc + (c.severity === 'critical' ? 28 : c.severity === 'high' ? 18 : c.severity === 'medium' ? 10 : 5);
+  }, 0);
+  const rawRisk = severitySum + (severedLinksCount * 6) + (indirectImpactedIds.size * 4);
+  const riskScore = Math.min(98, Math.max(12, rawRisk > 0 ? rawRisk + 25 : 12));
 
   logs.push(`[ANALYSIS COMPLETE] Direct Plan A yielded ${consequences.length} Breaking Failures (${criticalCount} Critical). Calculated Risk Score: ${riskScore}%.`);
 
