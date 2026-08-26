@@ -98,6 +98,7 @@ export interface ActionPlan {
   consequences: Consequence[];
   simulatedLogs: string[];
   executionTimeMs: number;
+  aiReasoningSummary?: string;
 }
 
 export interface UncertaintyMetric {
@@ -132,6 +133,8 @@ export interface AuditLog {
     nodesModified: number;
     linksRerouted: number;
   };
+  previousHash?: string;
+  hashSignature?: string;
 }
 
 export interface InvariantCheck {
@@ -143,6 +146,7 @@ export interface InvariantCheck {
   violatingNodeId?: string;
   violatingNodeName?: string;
   remediation?: string;
+  evaluatedAtStep?: string;
 }
 
 export interface TemporalConsequence {
@@ -199,3 +203,15 @@ export interface PresetScenario {
   accentColor: string;
 }
 
+/**
+ * Connector Surface System Architecture Interfaces
+ */
+export interface SystemConnector {
+  id: string;
+  name: string;
+  type: 'idp' | 'cloud' | 'observability' | 'workflow';
+  provider: 'okta' | 'aws' | 'kubernetes' | 'datadog' | 'jira';
+  status: 'connected' | 'dry_run' | 'offline';
+  testConnection: () => Promise<boolean>;
+  fetchStateSnapshot: () => Promise<Partial<SystemState>>;
+}
