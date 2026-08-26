@@ -64,9 +64,9 @@ export function generateGenericComparisonPlans(
   const candidateServiceAccounts = shadowB.nodes.filter(n => n.type === 'user' && (n.id.includes('svc') || n.id.includes('bot') || n.name.toLowerCase().includes('service') || n.name.toLowerCase().includes('automation')));
   const candidateReplicas = shadowB.nodes.filter(n => n.type === 'resource' && n.id !== targetNode.id && n.status === 'active');
 
-  const defaultUser: SystemNode = candidateUsers[0] || { id: 'user-lead', name: 'Designated Backup Lead', type: 'user', status: 'active', meta: {} };
-  const defaultSvc: SystemNode = candidateServiceAccounts[0] || candidateUsers[1] || { id: 'user-svc-bot', name: 'Managed Service Principal', type: 'user', status: 'active', meta: {} };
-  const defaultReplica: SystemNode = candidateReplicas[0] || { id: 'resource-failover', name: 'Failover Endpoint Pool', type: 'resource', status: 'active', meta: {} };
+  const defaultUser: SystemNode = candidateUsers[0] || { id: 'user-lead', name: 'Designated Backup Lead', type: 'user', description: 'Designated backup lead for access transfers', status: 'active', meta: {} };
+  const defaultSvc: SystemNode = candidateServiceAccounts[0] || candidateUsers[1] || { id: 'user-svc-bot', name: 'Managed Service Principal', type: 'user', description: 'Managed service account principal', status: 'active', meta: {} };
+  const defaultReplica: SystemNode = candidateReplicas[0] || { id: 'resource-failover', name: 'Failover Endpoint Pool', type: 'resource', description: 'Failover read replica endpoint pool', status: 'active', meta: {} };
 
   // Address Broken Workflows
   simA.consequences.filter(c => c.category === 'workflow_stall').forEach(cons => {
