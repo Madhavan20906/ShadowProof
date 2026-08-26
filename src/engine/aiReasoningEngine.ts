@@ -8,10 +8,7 @@ export interface AIRiskReasoning {
   confidenceScore: number;
 }
 
-interface GeminiModelInfo {
-  name: string;
-  supportedGenerationMethods?: string[];
-}
+let cachedReasoningModel: string | null = null;
 
 export async function analyzeSimulationWithAI(
   planAResult: SimulationResult,
@@ -27,7 +24,6 @@ export async function analyzeSimulationWithAI(
   const violatedInvariants = planAResult.invariants.filter(i => i.status === 'violated');
 
   if (!apiKey) {
-    
     return {
       structuralSummary: `Symbolic engine identified ${planAResult.consequences.length} cascading breaking failure(s) (${criticalCount} Critical) across graph fanout depth of ${planAResult.blastRadius.indirectNodesCount} node(s).`,
       keyVulnerabilities: planAResult.consequences.map(c => `${c.title}: ${c.businessImpact}`),
@@ -42,28 +38,9 @@ export async function analyzeSimulationWithAI(
   }
 
   const cleanKey = apiKey.trim().replace(/^["']|["']$/g, '');
-  const EXCLUDED_PATTERNS = ['tts', 'embed', 'audio', 'imagen', 'realtime', 'bison', 'gecko', 'gemini-2.5-flash'];
-  const PREFERRED_MODELS = ['gemini-3.6-flash', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
-  let candidateModels = PREFERRED_MODELS;
-
-  try {
-    const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${cleanKey}`);
-    if (listRes.ok) {
-      const listData = await listRes.json();
-      const fetchedModels: string[] = (listData.models || [])
-        .filter((m: GeminiModelInfo) => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent'))
-        .map((m: GeminiModelInfo) => m.name.replace(/^models\//, ''))
-        .filter((name: string) => !EXCLUDED_PATTERNS.some(p => name.toLowerCase().includes(p)));
-
-      if (fetchedModels.length > 0) {
-        const flash36 = fetchedModels.filter(m => m.includes('3.6') || m.includes('flash'));
-        const otherModels = fetchedModels.filter(m => !m.includes('3.6') && !m.includes('flash'));
-        candidateModels = Array.from(new Set([...PREFERRED_MODELS, ...flash36, ...otherModels]));
-      }
-    }
-  } catch (e) {
-    console.warn('Could not fetch Gemini models list, using static candidate list.');
-  }
+  const PREFERRED_MODELS = cachedReasoningModel 
+    ? [cachedReasoningModel, 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.5-pro']
+    : ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.5-pro'];
 
   const promptPayload = {
     planA_riskScore: planAResult.riskScore,
@@ -78,7 +55,7 @@ export async function analyzeSimulationWithAI(
 Simulation Data:
 ${JSON.stringify(promptPayload)}`;
 
-  for (const targetModel of candidateModels) {
+  for (const targetModel of PREFERRED_MODELS) {
     try {
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${cleanKey}`, {
         method: 'POST',
@@ -100,6 +77,7 @@ ${JSON.stringify(promptPayload)}`;
       });
 
       if (response.ok) {
+        cachedReasoningModel = targetModel;
         const data = await response.json();
         const contentStr = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
         const jsonMatch = contentStr.match(/\{[\s\S]*\}/);
@@ -112,6 +90,9 @@ ${JSON.stringify(promptPayload)}`;
           recommendedActionRationale: parsed.recommendedActionRationale || 'Rehearsed Plan B avoids active outages.',
           confidenceScore: typeof parsed.confidenceScore === 'number' ? parsed.confidenceScore : planAResult.coverage.overallConfidence
         };
+      } else if (response.status === 429) {
+        console.warn(`Gemini API rate limit reached on model ${targetModel}, using deterministic reasoning fallback.`);
+        break;
       }
     } catch (err) {
       console.warn(`Gemini API reasoning error with model ${targetModel}:`, err);

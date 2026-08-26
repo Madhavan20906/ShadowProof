@@ -58,10 +58,7 @@ export function parseUserIntent(intentText: string, systemState: SystemState): P
   };
 }
 
-interface GeminiModelItem {
-  name: string;
-  supportedGenerationMethods?: string[];
-}
+let cachedWorkingModel: string | null = null;
 
 export async function parseUserIntentAsync(intentText: string, systemState: SystemState): Promise<ParsedIntent> {
   const metaEnv = typeof import.meta !== 'undefined' ? (import.meta as unknown as { env?: Record<string, string> }).env : undefined;
@@ -75,31 +72,12 @@ export async function parseUserIntentAsync(intentText: string, systemState: Syst
 
   const cleanKey = apiKey.trim().replace(/^["']|["']$/g, '');
   const availableNodes = systemState.nodes.map(n => ({ id: n.id, name: n.name, type: n.type }));
-  
-  const EXCLUDED_PATTERNS = ['tts', 'embed', 'audio', 'imagen', 'realtime', 'bison', 'gecko', 'gemini-2.5-flash'];
-  const PREFERRED_MODELS = ['gemini-3.6-flash', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
-  let candidateModels = PREFERRED_MODELS;
 
-  try {
-    const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${cleanKey}`);
-    if (listRes.ok) {
-      const listData = await listRes.json();
-      const fetchedModels: string[] = (listData.models || [])
-        .filter((m: GeminiModelItem) => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent'))
-        .map((m: GeminiModelItem) => m.name.replace(/^models\//, ''))
-        .filter((name: string) => !EXCLUDED_PATTERNS.some(p => name.toLowerCase().includes(p)));
+  const PREFERRED_MODELS = cachedWorkingModel 
+    ? [cachedWorkingModel, 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.5-pro']
+    : ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.5-pro'];
 
-      if (fetchedModels.length > 0) {
-        const flash36 = fetchedModels.filter(m => m.includes('3.6') || m.includes('flash'));
-        const otherModels = fetchedModels.filter(m => !m.includes('3.6') && !m.includes('flash'));
-        candidateModels = Array.from(new Set([...PREFERRED_MODELS, ...flash36, ...otherModels]));
-      }
-    }
-  } catch (e) {
-    console.warn('Could not fetch Gemini models list, using static candidate list.');
-  }
-
-  for (const targetModel of candidateModels) {
+  for (const targetModel of PREFERRED_MODELS) {
     try {
       const promptText = `You are ShadowProof's Operational Intent Parser. Standardize operational intent requests against system graph nodes: ${JSON.stringify(availableNodes)}.
 Input user intent text: "${intentText}"
@@ -127,6 +105,7 @@ Return ONLY a valid JSON object matching this schema:
       });
 
       if (response.ok) {
+        cachedWorkingModel = targetModel;
         const data = await response.json();
         const contentStr = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
         const jsonMatch = contentStr.match(/\{[\s\S]*\}/);
@@ -146,15 +125,15 @@ Return ONLY a valid JSON object matching this schema:
           aiExplanation: parsedObj.aiExplanation || `Gemini LLM (${targetModel}) parsed target '${matchedNode.name}' with active graph safety constraints.`,
           parsedByLLM: true
         };
-      } else {
-        const errorMsg = await response.text();
-        console.warn(`Gemini API model ${targetModel} status ${response.status}:`, errorMsg);
+      } else if (response.status === 429) {
+        console.warn(`Gemini API rate limit reached on model ${targetModel}, using deterministic parser fallback.`);
+        break;
       }
     } catch (err) {
       console.warn(`Gemini API parse error with model ${targetModel}:`, err);
     }
   }
 
-  console.warn('All Gemini API models returned errors, falling back to deterministic parser.');
+  console.warn('Falling back to deterministic parser.');
   return parseUserIntent(intentText, systemState);
 }
