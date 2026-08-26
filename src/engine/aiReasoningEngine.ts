@@ -13,12 +13,18 @@ export interface AIRiskReasoning {
  * and generates deep AI risk reasoning using Google Gemini (or fallback).
  * Note: The Symbolic Engine remains authoritative for all safety & invariant decisions.
  */
+interface GeminiModelInfo {
+  name: string;
+  supportedGenerationMethods?: string[];
+}
+
 export async function analyzeSimulationWithAI(
   planAResult: SimulationResult,
   planBResult: SimulationResult | null,
   systemState: SystemState
 ): Promise<AIRiskReasoning> {
-  const apiKey = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_GEMINI_API_KEY) || 
+  const metaEnv = typeof import.meta !== 'undefined' ? (import.meta as unknown as { env?: Record<string, string> }).env : undefined;
+  const apiKey = metaEnv?.VITE_GEMINI_API_KEY || 
                  (typeof localStorage !== 'undefined' && (localStorage.getItem('gemini_api_key') || localStorage.getItem('groq_api_key'))) || 
                  '';
 
@@ -41,8 +47,8 @@ export async function analyzeSimulationWithAI(
   }
 
   const cleanKey = apiKey.trim().replace(/^["']|["']$/g, '');
-  const EXCLUDED_PATTERNS = ['tts', 'embed', 'audio', 'imagen', 'realtime', 'bison', 'gecko', 'gemini-2.5-flash'];
-  const PREFERRED_MODELS = ['gemini-3.6-flash', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
+  const EXCLUDED_PATTERNS = ['tts', 'embed', 'audio', 'imagen', 'realtime', 'bison', 'gecko'];
+  const PREFERRED_MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
   let candidateModels = PREFERRED_MODELS;
 
   try {
@@ -50,14 +56,14 @@ export async function analyzeSimulationWithAI(
     if (listRes.ok) {
       const listData = await listRes.json();
       const fetchedModels: string[] = (listData.models || [])
-        .filter((m: any) => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent'))
-        .map((m: any) => m.name.replace(/^models\//, ''))
+        .filter((m: GeminiModelInfo) => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent'))
+        .map((m: GeminiModelInfo) => m.name.replace(/^models\//, ''))
         .filter((name: string) => !EXCLUDED_PATTERNS.some(p => name.toLowerCase().includes(p)));
 
       if (fetchedModels.length > 0) {
-        const flash36 = fetchedModels.filter(m => m.includes('3.6') || m.includes('flash'));
-        const otherModels = fetchedModels.filter(m => !m.includes('3.6') && !m.includes('flash'));
-        candidateModels = Array.from(new Set([...PREFERRED_MODELS, ...flash36, ...otherModels]));
+        const flashModels = fetchedModels.filter(m => m.includes('flash'));
+        const proModels = fetchedModels.filter(m => m.includes('pro') && !m.includes('flash'));
+        candidateModels = Array.from(new Set([...PREFERRED_MODELS, ...flashModels, ...proModels]));
       }
     }
   } catch (e) {

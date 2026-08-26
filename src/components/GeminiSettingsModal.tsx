@@ -56,10 +56,11 @@ export const GeminiSettingsModal: React.FC<GeminiSettingsModalProps> = ({ isOpen
           success: false
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errMessage = err instanceof Error ? err.message : String(err);
       setTestState({
         testing: false,
-        message: `❌ Network Error: ${err.message || 'Failed to reach Gemini endpoint.'}`,
+        message: `❌ Network Error: ${errMessage || 'Failed to reach Gemini endpoint.'}`,
         success: false
       });
     }
@@ -163,7 +164,7 @@ export const GeminiSettingsModal: React.FC<GeminiSettingsModalProps> = ({ isOpen
               <>
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                 <span className="text-emerald-300">
-                  Gemini API Key saved. Engine active for live LLM reasoning (Gemini 2.5 Flash).
+                  Gemini API Key saved. Engine active for live LLM reasoning (Gemini 2.0 Flash).
                 </span>
               </>
             ) : (

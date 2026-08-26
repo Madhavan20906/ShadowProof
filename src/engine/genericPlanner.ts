@@ -198,18 +198,17 @@ export function generateGenericComparisonPlans(
 
   logsB.push(`[STEP COMPLETED] Safely applied action to '${targetNode.name}'. All downstream dependencies re-routed!`);
 
-  // Simulate Plan B shadow state
+  // 3. Re-simulate Plan B shadow state dynamically through the symbolic engine
   const simB = simulatePlanAGeneric(shadowB, targetNode.id);
-  // Compute dynamic Plan B residual risk based on complexity of re-routed steps
-  const planBRiskScore = hasFailuresA 
-    ? Math.max(2, Math.min(12, Math.floor(stepsB.length * 1.8)))
-    : simA.riskScore;
 
-  simB.consequences = [];
+  // If remediations successfully resolved cascades, simB risk score reflects isolated deprovisioning
+  const planBRiskScore = simB.consequences.length === 0 
+    ? (hasFailuresA ? Math.min(12, Math.max(4, simB.riskScore)) : simA.riskScore)
+    : simB.riskScore;
+
   simB.riskScore = planBRiskScore;
-  simB.invariants.forEach(inv => inv.status = 'passed');
 
-  logsB.push(`[OBJECTIVE FUNCTION EVALUATION] Candidate Plan B evaluated with Risk Score: ${planBRiskScore}%.`);
+  logsB.push(`[SYMBOLIC RE-SIMULATION] Evaluated remediated graph snapshot. Remaining Consequences: ${simB.consequences.length}, Invariants Passed: ${simB.invariants.filter(i => i.status === 'passed').length}/${simB.invariants.length}. Computed Risk Score: ${planBRiskScore}%.`);
 
   const planB: ActionPlan = {
     id: 'shadowproof_plan_b',
@@ -220,35 +219,56 @@ export function generateGenericComparisonPlans(
       : `Direct execution is clean; no pre-routing actions required for '${targetNode.name}'.`,
     steps: stepsB,
     riskScore: planBRiskScore,
-    brokenWorkflowsCount: 0,
-    orphanedResourcesCount: 0,
-    crashedAutomationsCount: 0,
-    consequences: [],
-    simulatedLogs: logsB,
+    brokenWorkflowsCount: simB.consequences.filter(c => c.category === 'workflow_stall').length,
+    orphanedResourcesCount: simB.consequences.filter(c => c.category === 'resource_orphan').length,
+    crashedAutomationsCount: simB.consequences.filter(c => c.category === 'automation_crash').length,
+    consequences: simB.consequences,
+    simulatedLogs: [...logsB, ...simB.logs],
     executionTimeMs: 420
   };
 
-  // 3. Dynamic Uncertainty Calibration based on Evidence Coverage
-  const uncertainties: UncertaintyMetric[] = [
-    {
-      aspect: 'External Webhook Response Latency',
-      confidenceScore: 94,
-      reasoning: 'High confidence in local bearer token rotation, but external vendor API rate limit budgets cannot be live-pinged during shadow simulation.',
+  // 4. Dynamic Uncertainty Calibration derived from graph complexity & connectors
+  const hasWebhooks = initialState.links.some(l => l.type === 'triggers' || l.description?.includes('Webhook'));
+  const hasSessionTokens = initialState.nodes.some(n => n.type === 'user' || n.type === 'role');
+  const hasKmsStorage = initialState.nodes.some(n => n.type === 'resource' && (n.name.includes('KMS') || n.name.includes('Vault') || n.name.includes('Database')));
+
+  const uncertainties: UncertaintyMetric[] = [];
+
+  if (hasWebhooks) {
+    uncertainties.push({
+      aspect: 'External Webhook & Integration Response Latency',
+      confidenceScore: Math.min(96, 88 + (stepsB.length > 2 ? 4 : 8)),
+      reasoning: 'Local credential rotation simulated in graph. External vendor API rate limit budgets cannot be live-pinged during offline shadow simulation.',
       untestedVariables: ['External API response latency', 'Vendor rate limit budget']
-    },
-    {
-      aspect: 'Active Session Cookie Expiration',
+    });
+  }
+
+  if (hasSessionTokens) {
+    uncertainties.push({
+      aspect: 'Active Session Cookie & OAuth Token TTL',
       confidenceScore: 86,
-      reasoning: 'Role re-assignment simulated in graph. Active live browser sessions held in user cookies may require up to 15 minutes to naturally expire.',
+      reasoning: 'Role re-assignment simulated in graph topology. Active live browser sessions held in user cookies may require up to 15 minutes to naturally expire.',
       untestedVariables: ['Active SSO browser sessions', 'Cached JWT token TTL']
-    },
-    {
-      aspect: 'KMS Key Policy Propagation',
+    });
+  }
+
+  if (hasKmsStorage) {
+    uncertainties.push({
+      aspect: 'KMS Key Policy Propagation Delay',
       confidenceScore: 98,
-      reasoning: 'IAM policy re-assignment is deterministically modeled in shadow graph. KMS key policy syntax validated against IAM specifications.',
-      untestedVariables: ['AWS IAM global eventual consistency delay (up to 500ms)']
-    }
-  ];
+      reasoning: 'IAM policy re-assignment is deterministically modeled in shadow graph. KMS key policy syntax validated against cloud specifications.',
+      untestedVariables: ['AWS/GCP IAM eventual consistency propagation (up to 500ms)']
+    });
+  }
+
+  if (uncertainties.length === 0) {
+    uncertainties.push({
+      aspect: 'Graph Dependency Topology Coverage',
+      confidenceScore: 94,
+      reasoning: 'All primary and secondary links verified in isolated shadow workspace.',
+      untestedVariables: ['Unmapped sidecar network traffic']
+    });
+  }
 
   return {
     planA,
@@ -258,3 +278,4 @@ export function generateGenericComparisonPlans(
     simResultB: simB
   };
 }
+

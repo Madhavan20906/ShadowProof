@@ -1,9 +1,21 @@
-import { SystemState, Consequence, ActionPlan } from '../types/shadowproof';
+import { SystemState, Consequence, ActionStep } from '../types/shadowproof';
 import { cloneState, simulatePlanAGeneric } from './genericSimulationEngine';
 import { generateGenericComparisonPlans } from './genericPlanner';
-import { parseUserIntent } from './intentParser';
 
 export { cloneState };
+
+function getTargetNodeIdFromState(initialState: SystemState, presetId: string): string {
+  const match = initialState.nodes.find(n => 
+    n.id === presetId || 
+    n.id.toLowerCase().includes(presetId.toLowerCase()) || 
+    n.name.toLowerCase().includes(presetId.toLowerCase())
+  );
+  if (match) return match.id;
+
+  // Generic fallback based on node types in system state
+  const defaultTarget = initialState.nodes.find(n => n.type === 'user' || n.type === 'resource') || initialState.nodes[0];
+  return defaultTarget ? defaultTarget.id : 'user-alex';
+}
 
 export function simulateDirectPlanA(
   initialState: SystemState, 
@@ -14,12 +26,7 @@ export function simulateDirectPlanA(
   riskScore: number;
   logs: string[];
 } {
-  // Extract target node dynamically from state or presetId
-  let targetNodeId = 'user-alex';
-  if (presetId === 'jordan-devops-revoke') targetNodeId = 'user-jordan';
-  if (presetId === 'db-cluster-delete') targetNodeId = 'resource-db-replica-2';
-
-  // Run generic graph-traversal simulation engine
+  const targetNodeId = getTargetNodeIdFromState(initialState, presetId);
   const sim = simulatePlanAGeneric(initialState, targetNodeId);
 
   return {
@@ -38,19 +45,17 @@ export function simulateSaferPlanB(
   consequences: Consequence[];
   riskScore: number;
   logs: string[];
-  actionSteps: any[];
+  actionSteps: ActionStep[];
 } {
-  let targetNodeId = 'user-alex';
-  if (presetId === 'jordan-devops-revoke') targetNodeId = 'user-jordan';
-  if (presetId === 'db-cluster-delete') targetNodeId = 'resource-db-replica-2';
-
+  const targetNodeId = getTargetNodeIdFromState(initialState, presetId);
   const { planB, simResultB } = generateGenericComparisonPlans(initialState, targetNodeId);
 
   return {
     shadowState: simResultB.shadowState,
-    consequences: [],
-    riskScore: 4,
+    consequences: simResultB.consequences,
+    riskScore: simResultB.riskScore,
     logs: planB.simulatedLogs,
     actionSteps: planB.steps
   };
 }
+

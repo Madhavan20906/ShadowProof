@@ -72,8 +72,9 @@ export const CustomScenarioModal: React.FC<CustomScenarioModalProps> = ({
         setImportStatus(null);
         setShowJsonImport(false);
       }, 1200);
-    } catch (err: any) {
-      setImportStatus(`Import Error: ${err.message}`);
+    } catch (err: unknown) {
+      const errMessage = err instanceof Error ? err.message : String(err);
+      setImportStatus(`Import Error: ${errMessage}`);
     }
   };
 
@@ -170,7 +171,7 @@ export const CustomScenarioModal: React.FC<CustomScenarioModalProps> = ({
 
             <select
               value={nodeType}
-              onChange={e => setNodeType(e.target.value as any)}
+              onChange={e => setNodeType(e.target.value as 'user' | 'workflow' | 'resource' | 'automation')}
               className="bg-[#0B0E14] border border-slate-700/80 rounded-md p-2 text-slate-300 outline-none focus:border-blue-500"
             >
               <option value="user">User / Identity</option>

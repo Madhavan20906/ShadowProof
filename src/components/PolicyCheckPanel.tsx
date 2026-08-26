@@ -1,6 +1,7 @@
 import React from 'react';
 import { InvariantCheck } from '../types/shadowproof';
-import { ShieldCheck, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { ShieldCheck, CheckCircle, XCircle, AlertTriangle, Layers } from 'lucide-react';
+import { ENTERPRISE_CONNECTORS_REGISTRY } from '../engine/connectors';
 
 interface PolicyCheckPanelProps {
   invariants: InvariantCheck[];
@@ -9,12 +10,13 @@ interface PolicyCheckPanelProps {
 
 export function PolicyCheckPanel({ invariants, planType }: PolicyCheckPanelProps) {
   const isPlanB = planType === 'shadowproof_plan_b';
+  const hasViolations = invariants.some(i => i.status === 'violated');
 
   return (
     <div className="bg-[#131823] border border-slate-800 rounded-lg p-5 space-y-4">
       <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
         <div className="flex items-center gap-2.5">
-          <ShieldCheck className={`w-5 h-5 ${isPlanB ? 'text-emerald-400' : 'text-amber-400'}`} />
+          <ShieldCheck className={`w-5 h-5 ${!hasViolations ? 'text-emerald-400' : 'text-amber-400'}`} />
           <div>
             <h3 className="text-sm font-semibold text-white">
               Policy & Invariant Rule Evaluation
@@ -25,15 +27,15 @@ export function PolicyCheckPanel({ invariants, planType }: PolicyCheckPanelProps
           </div>
         </div>
         <span className={`px-2.5 py-1 rounded text-xs font-medium ${
-          isPlanB ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-900/40' : 'bg-red-950/60 text-red-400 border border-red-900/40'
+          !hasViolations ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-900/40' : 'bg-red-950/60 text-red-400 border border-red-900/40'
         }`}>
-          {isPlanB ? 'All Rules Passed' : 'Rule Violations Detected'}
+          {!hasViolations ? 'All Invariants Passed' : 'Rule Violations Detected'}
         </span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {invariants.map((inv) => {
-          const status = isPlanB ? 'passed' : inv.status;
+          const status = inv.status;
           return (
             <div
               key={inv.id}
@@ -72,6 +74,23 @@ export function PolicyCheckPanel({ invariants, planType }: PolicyCheckPanelProps
           );
         })}
       </div>
+
+      {/* Enterprise Surface Connectors Bar */}
+      <div className="pt-3 border-t border-slate-800/80">
+        <div className="flex items-center gap-2 mb-2">
+          <Layers className="w-3.5 h-3.5 text-blue-400" />
+          <h4 className="text-xs font-semibold text-slate-300">Monitored Enterprise Surface Connectors</h4>
+        </div>
+        <div className="flex flex-wrap gap-2 text-[11px]">
+          {ENTERPRISE_CONNECTORS_REGISTRY.map(conn => (
+            <span key={conn.id} className="px-2 py-0.5 rounded bg-[#0B0E14] border border-slate-800 text-slate-400 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              {conn.name}
+            </span>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
+

@@ -34,7 +34,7 @@ export interface SystemNode {
     sigCount?: number;
     kmsKeyId?: string;
     lastActive?: string;
-    [key: string]: any;
+    [key: string]: string | number | boolean | string[] | undefined;
   };
   x?: number;
   y?: number;
