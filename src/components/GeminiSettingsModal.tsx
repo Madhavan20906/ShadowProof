@@ -164,7 +164,7 @@ export const GeminiSettingsModal: React.FC<GeminiSettingsModalProps> = ({ isOpen
               <>
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                 <span className="text-emerald-300">
-                  Gemini API Key saved. Engine active for live LLM reasoning (Gemini 2.0 Flash).
+                  Gemini API Key saved. Engine active for live LLM reasoning (Gemini 3.6 Flash).
                 </span>
               </>
             ) : (

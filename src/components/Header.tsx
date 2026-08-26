@@ -59,7 +59,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span className={`w-2 h-2 rounded-full ${hasApiKey ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
             <span className="text-slate-400">AI Engine:</span>
             <span className="font-medium text-slate-200">
-              {hasApiKey ? 'Gemini 2.0 Flash Active' : 'Deterministic Fallback'}
+              {hasApiKey ? 'Gemini 3.6 Flash Active' : 'Deterministic Fallback'}
             </span>
           </button>
 
