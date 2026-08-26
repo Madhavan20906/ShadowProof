@@ -383,10 +383,10 @@ export function simulatePlanAGeneric(
 
   // 6. Formulaic Risk Score Calculation
   const severitySum = consequences.reduce((acc, c) => {
-    return acc + (c.severity === 'critical' ? 28 : c.severity === 'high' ? 18 : c.severity === 'medium' ? 10 : 5);
+    return acc + (c.severity === 'critical' ? 24 : c.severity === 'high' ? 15 : c.severity === 'medium' ? 8 : 4);
   }, 0);
-  const rawRisk = severitySum + (severedLinksCount * 6) + (indirectImpactedIds.size * 4);
-  const riskScore = Math.min(98, Math.max(12, rawRisk > 0 ? rawRisk + 25 : 12));
+  const rawRisk = severitySum + (severedLinksCount * 5) + (indirectImpactedIds.size * 3);
+  const riskScore = Math.min(99, Math.max(8, rawRisk));
 
   logs.push(`[ANALYSIS COMPLETE] Direct Plan A yielded ${consequences.length} Breaking Failures (${criticalCount} Critical). Calculated Risk Score: ${riskScore}%.`);
 

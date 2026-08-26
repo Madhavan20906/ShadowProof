@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Play, UserMinus, ShieldAlert, Database, Terminal, ArrowRight, Search } from 'lucide-react';
+import { Play, UserMinus, ShieldAlert, Database, Terminal, ArrowRight, Search, Sparkles, Cpu } from 'lucide-react';
 import { PRESET_SCENARIOS } from '../mock/scenarioData';
 import { PresetScenario } from '../types/shadowproof';
 
@@ -21,6 +21,7 @@ export const IntentInput: React.FC<IntentInputProps> = ({
   setSelectedPresetId
 }) => {
   const [customText, setCustomText] = useState(currentIntent);
+  const hasApiKey = typeof localStorage !== 'undefined' && !!(localStorage.getItem('gemini_api_key') || localStorage.getItem('groq_api_key'));
 
   const handleSelectPreset = (scenario: PresetScenario) => {
     setSelectedPresetId(scenario.id);
@@ -38,7 +39,7 @@ export const IntentInput: React.FC<IntentInputProps> = ({
   const getIcon = (name: string) => {
     switch (name) {
       case 'UserMinus': return <UserMinus className="w-4 h-4 text-amber-400" />;
-      case 'ShieldAlert': return <ShieldAlert className="w-4 h-4 text-red-400" />;
+      case 'ShieldAlert': return <ShieldAlert className="w-4 h-4 text-indigo-400" />;
       case 'Database': return <Database className="w-4 h-4 text-indigo-400" />;
       default: return <Terminal className="w-4 h-4 text-blue-400" />;
     }
@@ -91,6 +92,25 @@ export const IntentInput: React.FC<IntentInputProps> = ({
             </button>
           );
         })}
+      </div>
+
+      {/* AI Engine Indicator Bar */}
+      <div className="flex items-center justify-between mb-2 px-1">
+        <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+          Natural Language Execution Intent:
+        </span>
+        {hasApiKey ? (
+          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-900/60 flex items-center gap-1 shadow-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+            ✨ Gemini 3.6 Flash Active
+          </span>
+        ) : (
+          <span className="text-[10px] font-mono text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 flex items-center gap-1">
+            <Cpu className="w-3 h-3 text-slate-500" />
+            Deterministic Fallback (No Key)
+          </span>
+        )}
       </div>
 
       {/* Natural Language Prompt Input Bar */}

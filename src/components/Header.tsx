@@ -6,7 +6,7 @@ interface HeaderProps {
   isShadowActive: boolean;
   onOpenAudit: () => void;
   onOpenScenarioModal: () => void;
-  onOpenGroqModal: () => void;
+  onOpenGeminiModal: () => void;
   showComparison: boolean;
   setShowComparison: (val: boolean) => void;
 }
@@ -16,13 +16,15 @@ export const Header: React.FC<HeaderProps> = ({
   isShadowActive,
   onOpenAudit,
   onOpenScenarioModal,
-  onOpenGroqModal,
+  onOpenGeminiModal,
   showComparison,
   setShowComparison
 }) => {
+  const hasApiKey = typeof localStorage !== 'undefined' && !!(localStorage.getItem('gemini_api_key') || localStorage.getItem('groq_api_key'));
+
   return (
     <header className="bg-[#131823] border-b border-slate-800/80 px-6 py-3.5 sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div className="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-4">
         {/* Brand Logo & Title */}
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-blue-600/15 border border-blue-500/30 flex items-center justify-center text-blue-400">
@@ -45,6 +47,22 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* System Status Indicators */}
         <div className="flex items-center gap-3 text-xs">
+          {/* AI Engine Status */}
+          <button
+            onClick={onOpenGeminiModal}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-md border transition-all cursor-pointer ${
+              hasApiKey 
+                ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-300 hover:bg-emerald-900/40' 
+                : 'bg-slate-900/90 border-slate-800 text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <span className={`w-2 h-2 rounded-full ${hasApiKey ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
+            <span className="text-slate-400">AI Engine:</span>
+            <span className="font-medium text-slate-200">
+              {hasApiKey ? 'Gemini 3.6 Flash Active' : 'Deterministic Fallback'}
+            </span>
+          </button>
+
           {/* Target System Status */}
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-slate-900/90 border border-slate-800">
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
@@ -69,11 +87,11 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Navigation / Configuration Actions */}
         <div className="flex items-center gap-2">
           <button
-            onClick={onOpenGroqModal}
+            onClick={onOpenGeminiModal}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-slate-800/80 border border-slate-700/80 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
           >
             <Cpu className="w-3.5 h-3.5 text-indigo-400" />
-            AI Model Config
+            Gemini AI Config
           </button>
 
           <button

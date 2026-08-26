@@ -14,15 +14,17 @@ import { RealExecutionConsole } from './components/RealExecutionConsole';
 import { PostVerification } from './components/PostVerification';
 import { AuditTrailModal } from './components/AuditTrailModal';
 import { CustomScenarioModal } from './components/CustomScenarioModal';
-import { GroqSettingsModal } from './components/GroqSettingsModal';
+import { GeminiSettingsModal } from './components/GeminiSettingsModal';
+import { AIRiskCard } from './components/AIRiskCard';
 
 import { INITIAL_REAL_SYSTEM_STATE, PRESET_SCENARIOS, getInitialStateForPreset } from './mock/scenarioData';
-import { SystemState, ActionPlan, AuditLog, UncertaintyMetric, SimulationResult } from './types/shadowproof';
+import { SystemState, ActionPlan, AuditLog, UncertaintyMetric, SimulationResult, ParsedIntent } from './types/shadowproof';
 import { ShieldCheck, Play, ArrowRight, CheckCircle2, Lock, Cpu, Eye, AlertTriangle } from 'lucide-react';
 
 import { simulateDirectPlanA, simulateSaferPlanB } from './engine/shadowEngine';
 import { generateGenericComparisonPlans } from './engine/genericPlanner';
 import { parseUserIntent, parseUserIntentAsync } from './engine/intentParser';
+import { analyzeSimulationWithAI, AIRiskReasoning } from './engine/aiReasoningEngine';
 
 export function App() {
   // Intent & Scenario Selection
@@ -50,7 +52,7 @@ export function App() {
   const [showApprovalModal, setShowApprovalModal] = useState<boolean>(false);
   const [showAuditModal, setShowAuditModal] = useState<boolean>(false);
   const [showCustomModal, setShowCustomModal] = useState<boolean>(false);
-  const [showGroqModal, setShowGroqModal] = useState<boolean>(false);
+  const [showGeminiModal, setShowGeminiModal] = useState<boolean>(false);
 
   // Execution & Audit
   const [approverName, setApproverName] = useState<string>('');
@@ -63,6 +65,10 @@ export function App() {
     }
   });
 
+  // AI Reasoning & Intent State
+  const [parsedIntent, setParsedIntent] = useState<ParsedIntent | null>(null);
+  const [aiAnalysis, setAiAnalysis] = useState<AIRiskReasoning | null>(null);
+
   // Handle scenario preset switching
   const handlePresetSelect = (presetId: string) => {
     setSelectedPresetId(presetId);
@@ -70,6 +76,8 @@ export function App() {
     setRealSystemState(newState);
     setPlans(null);
     setSimResults(null);
+    setParsedIntent(null);
+    setAiAnalysis(null);
     setAppStage('intent');
     setActiveGraphMode('real');
   };
@@ -82,8 +90,9 @@ export function App() {
     // Simulate processing delay for realism
     await new Promise(r => setTimeout(r, 600));
 
-    // Parse target node from natural language intent text (with Groq API support)
+    // Parse target node from natural language intent text (with Gemini API support)
     const parsed = await parseUserIntentAsync(intentText, realSystemState);
+    setParsedIntent(parsed);
 
     // Run generic graph-traversal simulation engine
     const genericRes = generateGenericComparisonPlans(realSystemState, parsed.targetNodeId);
@@ -99,10 +108,16 @@ export function App() {
       simB: genericRes.simResultB
     });
 
+    // Run AI Risk Reasoning Engine (Gemini REST API or Fallback)
+    const reasoning = await analyzeSimulationWithAI(genericRes.simResultA, genericRes.simResultB, realSystemState);
+    setAiAnalysis(reasoning);
+
+    const bestPlanId = genericRes.planA.riskScore <= genericRes.planB.riskScore ? 'direct_plan_a' : 'shadowproof_plan_b';
+
     setIsSimulating(false);
     setAppStage('shadow_rehearsed');
-    setSelectedPlanId('shadowproof_plan_b');
-    setActiveGraphMode('shadowproof_plan_b');
+    setSelectedPlanId(bestPlanId);
+    setActiveGraphMode(bestPlanId);
   };
 
   // Open Approval Modal
@@ -185,13 +200,13 @@ export function App() {
         isShadowActive={appStage === 'shadow_rehearsed' || appStage === 'execution_running'}
         onOpenAudit={() => setShowAuditModal(true)}
         onOpenScenarioModal={() => setShowCustomModal(true)}
-        onOpenGroqModal={() => setShowGroqModal(true)}
+        onOpenGeminiModal={() => setShowGeminiModal(true)}
         showComparison={showComparison}
         setShowComparison={setShowComparison}
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
+      <main className="flex-1 max-w-[1600px] w-full mx-auto p-4 md:p-6 space-y-6">
         {/* Architectural Contrast Toggle Panel */}
         {showComparison && <ModeComparison />}
 
@@ -205,10 +220,18 @@ export function App() {
           setSelectedPresetId={handlePresetSelect}
         />
 
+        {/* Gemini AI Risk Reasoning & Parsing Card (Full Width) */}
+        {plans && (
+          <AIRiskCard
+            parsedIntent={parsedIntent}
+            aiAnalysis={aiAnalysis}
+          />
+        )}
+
         {/* Grid: Topology Dependency Graph + Interactive Controls */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Column: Interactive Dependency Graph */}
-          <div className="lg:col-span-7 flex flex-col space-y-3">
+          <div className="lg:col-span-6 flex flex-col space-y-3">
             {/* View Mode Toggle Bar */}
             <div className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-[#131823] border border-slate-800 text-xs">
               <span className="text-slate-400 font-medium">Topology View:</span>
@@ -229,7 +252,7 @@ export function App() {
                         activeGraphMode === 'direct_plan_a' ? 'bg-red-950/60 text-red-400 border border-red-900/40' : 'text-slate-400 hover:text-white'
                       }`}
                     >
-                      Plan A (Direct Failures)
+                      Plan A (Direct)
                     </button>
                     <button
                       onClick={() => setActiveGraphMode('shadowproof_plan_b')}
@@ -237,7 +260,7 @@ export function App() {
                         activeGraphMode === 'shadowproof_plan_b' ? 'bg-blue-950/60 text-blue-400 border border-blue-900/40' : 'text-slate-400 hover:text-white'
                       }`}
                     >
-                      Plan B (Re-routed Safe)
+                      Plan B (Re-routed)
                     </button>
                   </>
                 )}
@@ -252,7 +275,7 @@ export function App() {
           </div>
 
           {/* Right Column: Consequences & Rehearsal Output */}
-          <div className="lg:col-span-5 flex flex-col space-y-4">
+          <div className="lg:col-span-6 flex flex-col space-y-4">
             {appStage === 'intent' && !plans && (
               <div className="bg-[#131823] border border-slate-800 rounded-lg p-6 h-full flex flex-col items-center justify-center text-center space-y-3">
                 <div className="w-12 h-12 rounded bg-blue-950/40 border border-blue-900/40 flex items-center justify-center text-blue-400">
@@ -405,10 +428,10 @@ export function App() {
         }}
       />
 
-      {/* Groq AI Settings Modal */}
-      <GroqSettingsModal
-        isOpen={showGroqModal}
-        onClose={() => setShowGroqModal(false)}
+      {/* Gemini AI Settings Modal */}
+      <GeminiSettingsModal
+        isOpen={showGeminiModal}
+        onClose={() => setShowGeminiModal(false)}
       />
     </div>
   );

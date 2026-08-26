@@ -61,7 +61,7 @@ flowchart TD
 
 ShadowProof uses a **hybrid architecture** combining generative AI with deterministic graph safety models:
 
-- **AI-Assisted Components (Groq Llama 3.3 70B)**:
+- **AI-Assisted Components (Google Gemini 2.5 Flash)**:
   - Natural-language intent parsing & target node extraction.
   - Natural-language operational constraint detection.
   - Plain-language risk explanation generation.
@@ -90,9 +90,9 @@ cd shadowproof
 # Install dependencies
 npm install
 
-# (Optional) Set Groq API Key for live LLM parsing
+# (Optional) Set Google Gemini API Key for live LLM parsing
 # If omitted, system seamlessly defaults to built-in deterministic graph parsing.
-export VITE_GROQ_API_KEY="gsk_..."
+export VITE_GEMINI_API_KEY="AIzaSy..."
 
 # Start local development server
 npm run dev
@@ -127,7 +127,7 @@ We believe technical transparency is essential for engineering rigor. Here is an
 * **Production Roadmap**: Transitioning to Open Policy Agent (OPA) / Rego policy rules evaluated dynamically from external YAML/Rego definitions.
 
 ### 2. Intent Parsing & Natural Language Fallback
-* **Current Implementation**: When an API key is provided, Groq's `llama-3.3-70b` performs zero-shot entity extraction. In deterministic offline mode, the fallback parser tokenizes and matches target nodes dynamically from active graph topology and selects transfer candidates from live active users without hardcoded names.
+* **Current Implementation**: When an API key is provided, Google Gemini (`gemini-2.5-flash`) performs zero-shot entity extraction and structured JSON intent parsing. In deterministic offline mode, the fallback parser tokenizes and matches target nodes dynamically from active graph topology and selects transfer candidates from live active users without hardcoded names.
 * **Production Roadmap**: Integrating a local WebAssembly-based micro-LLM (Transformers.js / ONNX) for 100% offline semantic embedding matching.
 
 ### 3. Computed Consequence & Risk Severity Model

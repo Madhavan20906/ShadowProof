@@ -66,64 +66,96 @@ export function parseUserIntent(intentText: string, systemState: SystemState): P
 }
 
 export async function parseUserIntentAsync(intentText: string, systemState: SystemState): Promise<ParsedIntent> {
-  const apiKey = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_GROQ_API_KEY) || 
-                 (typeof localStorage !== 'undefined' && localStorage.getItem('groq_api_key')) || 
+  const apiKey = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_GEMINI_API_KEY) || 
+                 (typeof localStorage !== 'undefined' && (localStorage.getItem('gemini_api_key') || localStorage.getItem('groq_api_key'))) || 
                  '';
 
   if (!apiKey) {
     return parseUserIntent(intentText, systemState);
   }
 
+  const cleanKey = apiKey.trim().replace(/^["']|["']$/g, '');
+  const availableNodes = systemState.nodes.map(n => ({ id: n.id, name: n.name, type: n.type }));
+  
+  const EXCLUDED_PATTERNS = ['tts', 'embed', 'audio', 'imagen', 'realtime', 'bison', 'gecko', 'gemini-2.5-flash'];
+  const PREFERRED_MODELS = ['gemini-3.6-flash', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
+  let candidateModels = PREFERRED_MODELS;
+
   try {
-    const availableNodes = systemState.nodes.map(n => ({ id: n.id, name: n.name, type: n.type }));
-    
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: [
-          {
-            role: 'system',
-            content: `You are ShadowProof's Operational Intent Parser. Standardize operational intent requests against system graph nodes: ${JSON.stringify(availableNodes)}. Return ONLY JSON matching: {"targetNodeId": string, "action": "deprovision"|"delete"|"revoke", "constraints": string[], "aiExplanation": string}`
-          },
-          {
-            role: 'user',
-            content: intentText
-          }
-        ],
-        temperature: 0.1,
-        response_format: { type: 'json_object' }
-      })
-    });
+    const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${cleanKey}`);
+    if (listRes.ok) {
+      const listData = await listRes.json();
+      const fetchedModels: string[] = (listData.models || [])
+        .filter((m: any) => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent'))
+        .map((m: any) => m.name.replace(/^models\//, ''))
+        .filter((name: string) => !EXCLUDED_PATTERNS.some(p => name.toLowerCase().includes(p)));
 
-    if (!response.ok) {
-      console.warn('Groq API request returned status:', response.status, 'Falling back to deterministic parser.');
-      return parseUserIntent(intentText, systemState);
+      if (fetchedModels.length > 0) {
+        const flash36 = fetchedModels.filter(m => m.includes('3.6') || m.includes('flash'));
+        const otherModels = fetchedModels.filter(m => !m.includes('3.6') && !m.includes('flash'));
+        candidateModels = Array.from(new Set([...PREFERRED_MODELS, ...flash36, ...otherModels]));
+      }
     }
-
-    const data = await response.json();
-    const parsedObj = JSON.parse(data.choices[0].message.content);
-
-    const matchedNode = systemState.nodes.find(n => n.id === parsedObj.targetNodeId) || 
-                        systemState.nodes.find(n => n.name.toLowerCase().includes(parsedObj.targetNodeId?.toLowerCase())) ||
-                        systemState.nodes[0];
-
-    return {
-      action: parsedObj.action || 'deprovision',
-      targetNodeId: matchedNode.id,
-      targetNodeName: matchedNode.name,
-      targetNodeType: matchedNode.type,
-      constraints: parsedObj.constraints || ['Ensure 0 critical breaking failures.'],
-      rawIntent: intentText,
-      aiExplanation: parsedObj.aiExplanation || `Groq LLM parsed target '${matchedNode.name}' with active graph safety constraints.`,
-      parsedByLLM: true
-    };
-  } catch (err) {
-    console.warn('Groq API parsing failed, using deterministic fallback:', err);
-    return parseUserIntent(intentText, systemState);
+  } catch (e) {
+    console.warn('Could not fetch Gemini models list, using static candidate list.');
   }
+
+  for (const targetModel of candidateModels) {
+    try {
+      const promptText = `You are ShadowProof's Operational Intent Parser. Standardize operational intent requests against system graph nodes: ${JSON.stringify(availableNodes)}.
+Input user intent text: "${intentText}"
+
+Return ONLY a valid JSON object matching this schema:
+{"targetNodeId": string, "action": "deprovision"|"delete"|"revoke", "constraints": string[], "aiExplanation": string}`;
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${cleanKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: 'user',
+              parts: [{ text: promptText }]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.1,
+            responseMimeType: 'application/json'
+          }
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const contentStr = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+        const jsonMatch = contentStr.match(/\{[\s\S]*\}/);
+        const parsedObj = JSON.parse(jsonMatch ? jsonMatch[0] : contentStr);
+
+        const matchedNode = systemState.nodes.find(n => n.id === parsedObj.targetNodeId) || 
+                            systemState.nodes.find(n => n.name.toLowerCase().includes(String(parsedObj.targetNodeId).toLowerCase())) ||
+                            systemState.nodes[0];
+
+        return {
+          action: parsedObj.action || 'deprovision',
+          targetNodeId: matchedNode.id,
+          targetNodeName: matchedNode.name,
+          targetNodeType: matchedNode.type,
+          constraints: parsedObj.constraints || ['Ensure 0 critical breaking failures.'],
+          rawIntent: intentText,
+          aiExplanation: parsedObj.aiExplanation || `Gemini LLM (${targetModel}) parsed target '${matchedNode.name}' with active graph safety constraints.`,
+          parsedByLLM: true
+        };
+      } else {
+        const errorMsg = await response.text();
+        console.warn(`Gemini API model ${targetModel} status ${response.status}:`, errorMsg);
+      }
+    } catch (err) {
+      console.warn(`Gemini API parse error with model ${targetModel}:`, err);
+    }
+  }
+
+  console.warn('All Gemini API models returned errors, falling back to deterministic parser.');
+  return parseUserIntent(intentText, systemState);
 }

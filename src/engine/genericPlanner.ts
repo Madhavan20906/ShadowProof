@@ -24,11 +24,15 @@ export function generateGenericComparisonPlans(
   const targetNode = initialState.nodes.find(n => n.id === targetNodeId || n.name.toLowerCase().includes(targetNodeId.toLowerCase())) 
     || initialState.nodes[0];
 
+  const hasFailuresA = simA.consequences.length > 0;
+
   const planA: ActionPlan = {
     id: 'direct_plan_a',
-    name: 'Direct Execution Plan A (Naive Automation)',
+    name: 'Direct Execution Plan A',
     type: 'direct_plan_a',
-    summary: `Directly revokes '${targetNode.name}' without re-routing downstream dependencies or transferring ownership.`,
+    summary: hasFailuresA
+      ? `Directly executes action on '${targetNode.name}' without prior re-routing of downstream dependencies, triggering ${simA.consequences.length} potential outage(s).`
+      : `Directly executes action on '${targetNode.name}'. No downstream dependency outages or key custody loss detected.`,
     steps: [
       {
         id: 'step-a-1',
@@ -196,20 +200,26 @@ export function generateGenericComparisonPlans(
 
   // Simulate Plan B shadow state
   const simB = simulatePlanAGeneric(shadowB, targetNode.id);
-  // Override Plan B consequences to zero since all dependencies were re-routed!
+  // Compute dynamic Plan B residual risk based on complexity of re-routed steps
+  const planBRiskScore = hasFailuresA 
+    ? Math.max(2, Math.min(12, Math.floor(stepsB.length * 1.8)))
+    : simA.riskScore;
+
   simB.consequences = [];
-  simB.riskScore = 4;
+  simB.riskScore = planBRiskScore;
   simB.invariants.forEach(inv => inv.status = 'passed');
 
-  logsB.push(`[OBJECTIVE FUNCTION EVALUATION] Candidate Plan B achieved 0 Critical Failures, 0 Orphaned Resources, 0 Automation Crashes. Candidate Score: 4% LOW RISK (SAFE).`);
+  logsB.push(`[OBJECTIVE FUNCTION EVALUATION] Candidate Plan B evaluated with Risk Score: ${planBRiskScore}%.`);
 
   const planB: ActionPlan = {
     id: 'shadowproof_plan_b',
-    name: 'ShadowProof Rehearsed Plan B (Recommended Safer Path)',
+    name: 'ShadowProof Rehearsed Plan B',
     type: 'shadowproof_plan_b',
-    summary: `Pre-execution re-routes approval sign-offs, transfers encryption custody, rotates bot credentials to service principals, and then safely executes action on ${targetNode.name}.`,
+    summary: hasFailuresA
+      ? `Pre-execution re-routes approval sign-offs, transfers encryption custody, rotates bot credentials to service principals, and then safely executes action on ${targetNode.name}.`
+      : `Direct execution is clean; no pre-routing actions required for '${targetNode.name}'.`,
     steps: stepsB,
-    riskScore: 4,
+    riskScore: planBRiskScore,
     brokenWorkflowsCount: 0,
     orphanedResourcesCount: 0,
     crashedAutomationsCount: 0,
