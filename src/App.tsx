@@ -18,7 +18,7 @@ import { GeminiSettingsModal } from './components/GeminiSettingsModal';
 import { AIRiskCard } from './components/AIRiskCard';
 
 import { INITIAL_REAL_SYSTEM_STATE, PRESET_SCENARIOS, getInitialStateForPreset } from './mock/scenarioData';
-import { SystemState, ActionPlan, AuditLog, UncertaintyMetric, SimulationResult, ParsedIntent } from './types/shadowproof';
+import { SystemState, ActionPlan, ActionStep, AuditLog, UncertaintyMetric, SimulationResult, ParsedIntent } from './types/shadowproof';
 import { ShieldCheck, Play, ArrowRight, CheckCircle2, Lock, Cpu, Eye, AlertTriangle } from 'lucide-react';
 
 import { simulateDirectPlanA, simulateSaferPlanB } from './engine/shadowEngine';
@@ -96,8 +96,48 @@ export function App() {
       simB: genericRes.simResultB
     });
 
-    const reasoning = await analyzeSimulationWithAI(genericRes.simResultA, genericRes.simResultB, realSystemState);
+    const reasoning = await analyzeSimulationWithAI(intentText, realSystemState, genericRes.simResultA, genericRes.simResultB);
     setAiAnalysis(reasoning);
+
+    if (reasoning.parsedByLLM) {
+      const activeTargetId = reasoning.targetNodeId || parsed.targetNodeId;
+      const targetNode = realSystemState.nodes.find(n => n.id === activeTargetId);
+
+      setParsedIntent({
+        action: reasoning.action || parsed.action,
+        targetNodeId: activeTargetId,
+        targetNodeName: targetNode?.name || parsed.targetNodeName,
+        targetNodeType: targetNode?.type || parsed.targetNodeType,
+        constraints: reasoning.constraints && reasoning.constraints.length > 0 ? reasoning.constraints : parsed.constraints,
+        rawIntent: intentText,
+        aiExplanation: `Gemini Safety Reasoning Engine parsed target '${targetNode?.name || activeTargetId}' (${reasoning.action?.toUpperCase()}) with ${reasoning.constraints?.length || 0} active graph safety constraint(s).`,
+        parsedByLLM: true
+      });
+
+      if (reasoning.planB_steps && reasoning.planB_steps.length > 0) {
+        const aiSteps: ActionStep[] = reasoning.planB_steps.map((step, idx) => {
+          const tNode = realSystemState.nodes.find(n => n.id === step.targetNodeId || n.name.toLowerCase().includes(step.targetNodeId.toLowerCase())) || { name: step.targetNodeId };
+          let stepType: ActionStep['type'] = 'update_permission';
+          const opLower = step.op.toLowerCase();
+          if (opLower.includes('reassign')) stepType = 'reassign_approver';
+          else if (opLower.includes('transfer')) stepType = 'transfer_ownership';
+          else if (opLower.includes('rotate')) stepType = 'rotate_credential';
+          else if (opLower.includes('deprovision') || opLower.includes('delete') || opLower.includes('revoke')) stepType = 'deprovision';
+
+          return {
+            id: `step-ai-${idx + 1}`,
+            title: `${step.op.replace(/_/g, ' ').toUpperCase()}: ${tNode.name}`,
+            type: stepType,
+            targetId: step.targetNodeId,
+            targetName: tNode.name,
+            details: step.rationale,
+            status: 'completed' as const
+          };
+        });
+
+        genericRes.planB.steps = aiSteps;
+      }
+    }
 
     const bestPlanId = genericRes.planA.riskScore <= genericRes.planB.riskScore ? 'direct_plan_a' : 'shadowproof_plan_b';
 
