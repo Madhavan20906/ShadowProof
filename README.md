@@ -4,12 +4,12 @@
 [![React](https://img.shields.io/badge/React-18.3-blue?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![TailwindCSS](https://img.shields.io/badge/Tailwind-3.4-06B6D4?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
-[![Google Gemini](https://img.shields.io/badge/Google_Gemini-2.5_Flash-8E75B2?style=for-the-badge&logo=google)](https://ai.google.dev/)
+[![Google Gemini](https://img.shields.io/badge/Google_Gemini-3.6_Flash-8E75B2?style=for-the-badge&logo=google)](https://ai.google.dev/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 > **"Don't let your production environment be your testing ground."**
 
-**ShadowProof** is an enterprise-grade **pre-execution counterfactual rehearsal engine**. Before any destructive operational mutation (SSO offboarding, cloud resource deletion, database teardown, or API token revocation) touches a real system, ShadowProof clones the topology graph, simulates multi-hop failure cascades, evaluates compliance invariants, and synthesizes a non-destructive **Plan B (Rehearsed Execution)** alternative in real-time.
+**ShadowProof** is an enterprise-grade **pre-execution counterfactual rehearsal engine**. Powered by Google Gemini, ShadowProof intercepts destructive operational intents (SSO offboarding, cloud resource deletion, database teardown, or API token revocation), clones the topology graph, simulates multi-hop failure cascades, evaluates compliance invariants, and synthesizes non-destructive **Plan B (Rehearsed Execution)** graph operations in real-time.
 
 ---
 
@@ -23,28 +23,25 @@ When SREs, IT Administrators, or Security Operations execute routine operational
 
 ---
 
-## ⚡ The Solution: Shadow Rehearsal Architecture
+## ⚡ The Solution: Gemini AI Safety Rehearsal Architecture
 
-ShadowProof intercepts operational intents and runs a **7-stage safety rehearsal pipeline**:
+ShadowProof intercepts operational intents and runs a **unified Gemini AI Safety Reasoning Pipeline**:
 
 ```mermaid
 flowchart TD
-    A[Operational Intent / Command Input] --> B[Gemini AI Intent & Constraint Parser]
-    B -->|Target Node & Rules| C[System Graph State Cloning]
+    A[Operational Intent / Command Input] --> B[Gemini AI Safety Reasoning Engine]
     
-    subgraph Isolated Shadow Rehearsal Environment
-        C --> D[Plan A: Direct Mutation Engine]
-        D --> E[Multi-Hop Graph Cascade Traversal]
-        E --> F{Invariant Policy Evaluator}
-        
-        F -->|Violations Detected| G[Goal-Preserving State Search Engine]
-        G -->|Auto-Reroute & Transfer| H[Plan B: Rehearsed Execution Model]
+    subgraph Unified AI & Rehearsal Pipeline
+        B -->|1. Intent Parsing| C[Extract Target Node, Action Type & Safety Constraints]
+        B -->|2. Causal Risk Reasoning| D[Multi-Hop Graph Blast Radius & Invariant Traversal]
+        D --> E{Policy Invariant Guardrails}
+        E -->|Violations Identified| F[3. Operational Plan Synthesis: Generate Executable Plan B Operations]
     end
     
-    H --> I[Counterfactual Evidence Matrix & Risk Scoring]
-    I --> J[Human Approval & Governance Gate]
-    J -->|Approved| K[Controlled Sandbox Execution Console]
-    K --> L[Immutable Hash Audit Trail & JSON Verification]
+    F --> G[Counterfactual Evidence Matrix & Dynamic AI Risk Cards]
+    G --> H[Human Approval & Governance Gate]
+    H -->|Approved| I[Controlled Sandbox Execution Console]
+    I --> J[Immutable Hash Audit Trail & JSON Verification]
 ```
 
 ---
@@ -53,12 +50,12 @@ flowchart TD
 
 | Feature | Description |
 | :--- | :--- |
-| **Comparative Simulation Engine** | Dynamic computation of Risk Scores (0-100), blast radius depth, and breaking consequences for both **Plan A (Direct)** and **Plan B (Rehearsed)**. |
-| **Multi-Model Gemini AI Integration** | Google Gemini API integration (`gemini-2.5-flash` / `gemini-2.0-flash` / `gemini-1.5-flash`) with dynamic model discovery, cached model resolution, and zero-downtime offline deterministic fallback. |
+| **Gemini AI Safety Reasoning Engine** | Core AI engine leveraging Google Gemini (`gemini-3.6-flash` / `gemini-2.5-flash`) to parse intents, extract implicit safety constraints, evaluate causal risk, and synthesize ordered Plan B graph operations. |
+| **Plan B Remediation Synthesis** | Generates concrete, executable graph operations (`planB_steps`: key custody transfers, dependency re-routing, fallback delegation) that resolve invariant breaches without human guesswork. |
+| **Comparative Blast Radius Engine** | Dynamic computation of Risk Scores (0-100), blast radius depth, and breaking failure consequences for both **Plan A (Direct)** and **Plan B (Rehearsed)**. |
 | **Policy Invariant Guardrails** | Enforces 5 strict system invariants (`INV-01` through `INV-05`) verifying approval signatories, KMS key custody, automation principal auth, master governance seats, and database connection pools. |
 | **Interactive Topology Visualizer** | Full SVG dependency graph visualization with node drag-and-drop, topological auto-layout, search/filtering, and interactive blast radius heatmaps. |
 | **Temporal Consequence Breakdown** | Detailed impact timeline forecasting downstream failures at `T+0s`, `T+5m`, `T+1h`, and `T+24h`. |
-| **Custom Scenario Importer/Exporter** | Built-in scenario manager supporting custom JSON snapshot import/export and active entity graph editing. |
 | **Controlled Sandbox Console** | Real-time synthetic terminal emulator demonstrating zero-outage execution with live log streaming. |
 | **Immutable Compliance Audit Trail** | SHA-256 snapshot hashing, digital approval signatures, verification checklists, and downloadable compliance audit logs. |
 
@@ -67,8 +64,9 @@ flowchart TD
 ## 🛠️ Tech Stack & Architecture
 
 - **Frontend & UI**: React 18, TypeScript, TailwindCSS, Lucide Icons, Vite
+- **AI Safety Engine**: Google Gemini REST API (`aiReasoningEngine.ts`) with prompt-driven intent parsing, constraint extraction, causal risk analysis, and plan synthesis
 - **Graph & Topology Engine**: Custom graph traversal algorithms (`genericPlanner.ts`, `genericSimulationEngine.ts`)
-- **Generative AI Engine**: Google Gemini REST API with zero-overhead model caching and rate limit short-circuit protection
+- **Resilience & Fallback**: Zero-downtime offline deterministic fallback engine and cached model resolution with 429 rate-limit protection
 - **Testing & Tooling**: Vitest, PostCSS, ESLint
 
 ---
@@ -118,7 +116,7 @@ npm run build
 shadowproof/
 ├── src/
 │   ├── components/            # React UI Components
-│   │   ├── AIRiskCard.tsx       # AI Risk Reasoning Card
+│   │   ├── AIRiskCard.tsx       # AI Risk & Safety Reasoning Card
 │   │   ├── DependencyGraph.tsx  # Interactive SVG Graph Visualizer
 │   │   ├── EvidenceMatrix.tsx   # Side-by-side Plan A vs Plan B Evidence Matrix
 │   │   ├── Header.tsx           # Global Header & Engine Status
@@ -126,8 +124,8 @@ shadowproof/
 │   │   ├── PolicyCheckPanel.tsx # Invariant Check Verification Panel
 │   │   └── ...
 │   ├── engine/                # Core Simulation & AI Engines
-│   │   ├── aiReasoningEngine.ts # Gemini LLM Safety Synthesis Engine
-│   │   ├── intentParser.ts      # Gemini Natural Language Intent Parser
+│   │   ├── aiReasoningEngine.ts # Gemini AI Safety Reasoning Engine (Intent, Constraints, & Plan B synthesis)
+│   │   ├── intentParser.ts      # Legacy Intent Parser Wrapper
 │   │   ├── genericPlanner.ts    # Comparative Plan Generator & State Search
 │   │   ├── genericSimulationEngine.ts # Multi-hop Graph Traversal & Invariants
 │   │   └── shadowEngine.ts      # Legacy Scenario Engine Wrappers
